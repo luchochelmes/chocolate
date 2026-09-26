@@ -725,27 +725,7 @@
 <script type="text/x-dc" data-dc-script data-props='{"nombreLocal":{"editor":"text","default":"Chocolate","tsType":"string"},"cantidadMesas":{"editor":"int","default":14,"min":6,"max":24,"tsType":"number"}}'>
 const CATS_PANADERIA = ["Panadería", "Pastelería", "Cafetería", "Sándwiches", "Combos"];
 const CATS_BAR = ["Cafetería", "Bebidas frías", "Sándwiches", "Combos"];
-const SEED = [
-  { id: 1, nombre: "Medialuna de manteca", precioPanaderia: 800, precioBar: 900, stock: 60, categoria: "Panadería", combo: false },
-  { id: 2, nombre: "Medialuna de grasa", precioPanaderia: 700, precioBar: 800, stock: 60, categoria: "Panadería", combo: false },
-  { id: 3, nombre: "Factura surtida", precioPanaderia: 850, precioBar: 950, stock: 50, categoria: "Panadería", combo: false },
-  { id: 4, nombre: "Pan francés (kg)", precioPanaderia: 2900, precioBar: 3200, stock: 25, categoria: "Panadería", combo: false },
-  { id: 5, nombre: "Pan de campo", precioPanaderia: 4100, precioBar: 4500, stock: 12, categoria: "Panadería", combo: false },
-  { id: 6, nombre: "Criollo de grasa", precioPanaderia: 600, precioBar: 700, stock: 50, categoria: "Panadería", combo: false },
-  { id: 7, nombre: "Budín de limón (porción)", precioPanaderia: 2300, precioBar: 2600, stock: 18, categoria: "Pastelería", combo: false },
-  { id: 8, nombre: "Torta rogel (porción)", precioPanaderia: 4300, precioBar: 4800, stock: 10, categoria: "Pastelería", combo: false },
-  { id: 9, nombre: "Lemon pie (porción)", precioPanaderia: 3800, precioBar: 4200, stock: 10, categoria: "Pastelería", combo: false },
-  { id: 10, nombre: "Café con leche", precioPanaderia: 2200, precioBar: 2500, stock: 200, categoria: "Cafetería", combo: false },
-  { id: 11, nombre: "Cortado", precioPanaderia: 1700, precioBar: 1900, stock: 200, categoria: "Cafetería", combo: false },
-  { id: 12, nombre: "Submarino", precioPanaderia: 2900, precioBar: 3200, stock: 150, categoria: "Cafetería", combo: false },
-  { id: 13, nombre: "Té con leche", precioPanaderia: 1500, precioBar: 1700, stock: 200, categoria: "Cafetería", combo: false },
-  { id: 14, nombre: "Jugo de naranja", precioPanaderia: 2500, precioBar: 2800, stock: 40, categoria: "Cafetería", combo: false },
-  { id: 15, nombre: "Tostado jamón y queso", precioPanaderia: 3800, precioBar: 4200, stock: 30, categoria: "Sándwiches", combo: false },
-  { id: 16, nombre: "Sándwich de miga (docena)", precioPanaderia: 9000, precioBar: 9800, stock: 15, categoria: "Sándwiches", combo: false },
-  { id: 17, nombre: "Combo desayuno", precioPanaderia: 3800, precioBar: 4200, stock: 20, categoria: "Combos", combo: true },
-  { id: 18, nombre: "Combo merienda x2", precioPanaderia: 7200, precioBar: 7900, stock: 15, categoria: "Combos", combo: true },
-  { id: 19, nombre: "Combo mateada", precioPanaderia: 5900, precioBar: 6500, stock: 15, categoria: "Combos", combo: true }
-];
+const SEED = [];
 const METODOS = ["Efectivo", "Transferencia", "Débito", "Crédito"];
 
 function money(n) {
@@ -759,7 +739,7 @@ class Component extends DCLogic {
     mesas: Array.from({ length: 24 }, (_, i) => ({ n: i + 1, items: [], historial: [] })),
     mostrador: { items: [], historial: [] },
     productos: SEED.slice(),
-    nextId: 100,
+    nextId: 1,
     nextTicket: 1,
     categoriasPanaderia: CATS_PANADERIA.slice(),
     categoriasBar: CATS_BAR.slice(),
@@ -777,29 +757,6 @@ class Component extends DCLogic {
     movimientos: [],
     movForm: { nombre: "", tipo: "ingreso", monto: "" }
   };
-
-  componentDidMount() {
-    // Estado de demostración: algunas mesas con consumo y cierres previos.
-    this.setState(s => {
-      const mesas = s.mesas.map(m => ({ n: m.n, items: [], historial: [] }));
-      mesas[1].items = [{ pid: 10, qty: 2 }, { pid: 1, qty: 6 }];
-      mesas[4].items = [{ pid: 17, qty: 2 }, { pid: 14, qty: 1 }];
-      mesas[6].items = [{ pid: 15, qty: 1 }, { pid: 11, qty: 2 }, { pid: 7, qty: 1 }];
-      mesas[10].items = [{ pid: 18, qty: 1 }];
-      mesas[12].items = [{ pid: 12, qty: 3 }, { pid: 3, qty: 4 }];
-      mesas[0].historial = [{ hora: "08:40", total: 7300, metodo: "Efectivo", unidades: 5, items: [{ pid: 10, qty: 2, precioUnit: 900 }, { pid: 1, qty: 3, precioUnit: 900 }] }];
-      mesas[1].historial = [{ hora: "09:15", total: 12400, metodo: "Débito", unidades: 8, items: [{ pid: 12, qty: 2, precioUnit: 3200 }, { pid: 3, qty: 6, precioUnit: 950 }] }];
-      mesas[3].historial = [{ hora: "10:02", total: 5400, metodo: "Transferencia", unidades: 3, items: [{ pid: 9, qty: 1, precioUnit: 4200 }, { pid: 11, qty: 2, precioUnit: 1900 }] },
-                            { hora: "11:30", total: 9100, metodo: "Crédito", unidades: 6, items: [{ pid: 16, qty: 1, precioUnit: 9800 }, { pid: 4, qty: 1, precioUnit: 3200 }] }];
-      mesas[6].historial = [{ hora: "09:48", total: 6800, metodo: "Efectivo", unidades: 4, items: [{ pid: 10, qty: 2, precioUnit: 2500 }, { pid: 7, qty: 2, precioUnit: 2600 }] }];
-      mesas[8].historial = [{ hora: "10:55", total: 15200, metodo: "Efectivo", unidades: 11, items: [{ pid: 18, qty: 1, precioUnit: 7900 }, { pid: 12, qty: 3, precioUnit: 3200 }, { pid: 3, qty: 4, precioUnit: 950 } ] }];
-      const mostrador = {
-        items: [],
-        historial: [{ hora: "08:20", total: 4400, metodo: "Efectivo", unidades: 3, numero: 1, items: [{ pid: 1, qty: 2, precioUnit: 800 }, { pid: 10, qty: 1, precioUnit: 2200 }] }]
-      };
-      return { mesas, mostrador, nextTicket: 2 };
-    });
-  }
 
   get count() { return Math.max(1, Math.min(24, this.props.cantidadMesas ?? 14)); }
   prod(id) { return this.state.productos.find(p => p.id === id); }

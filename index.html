@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chocolate | Panaderia-Cafe</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:#F3EFE6; overflow-x:hidden; }
+  * { box-sizing:border-box; }
+  button { font-family:inherit; cursor:pointer; }
+  input, select { font-family:inherit; }
+  a { color:#6B5A3F; }
+  a:hover { color:#5B4A32; }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb { background:#D6CEBB; border-radius:8px; }
+
+  @media (max-width:860px) {
+    .app-main { padding-left:16px !important; padding-right:16px !important; }
+  }
+  @media (max-width:700px) {
+    .hero-stat, .cat-list { grid-column:1 / -1 !important; }
+  }
+  @media (max-width:640px) {
+    .app-header { padding:12px 14px !important; gap:12px !important; }
+    .cash-date { display:none !important; }
+    .app-main { padding-left:12px !important; padding-right:12px !important; }
+    .item-row, .cat-row, .cierre-row, .hist-row { row-gap:8px !important; }
+    .item-subtotal, .cat-price, .cierre-total { margin-left:auto !important; }
+    .app-nav { flex-wrap:nowrap !important; overflow-x:auto !important; -webkit-overflow-scrolling:touch; scrollbar-width:none; max-width:100%; }
+    .app-nav::-webkit-scrollbar { display:none; }
+    .app-nav button { white-space:nowrap !important; padding:10px 12px 12px !important; font-size:15px !important; }
+    .app-cash { margin-left:0 !important; width:100%; justify-content:space-between; }
+  }
+  @media (max-width:480px) {
+    .modal-box { max-height:92vh !important; overflow-y:auto !important; }
+  }
+  @media (max-width:380px) {
+    .brand-name { font-size:19px !important; }
+    .mesa-label-lg { font-size:26px !important; }
+  }
+
+  @media print {
+    body * { visibility:hidden; }
+    .ticket-print, .ticket-print * { visibility:visible; }
+    .ticket-print { position:absolute; top:0; left:0; width:100% !important; max-width:100% !important; box-shadow:none !important; }
+    .ticket-print .no-print, .ticket-print .ticket-tear { display:none !important; }
+  }
+
+  .ticket-tear {
+    height:12px;
+    background-image: linear-gradient(135deg, #F3EFE6 50%, transparent 50%), linear-gradient(-135deg, #F3EFE6 50%, transparent 50%);
+    background-size: 14px 14px;
+    background-repeat: repeat-x;
+    background-position: bottom left;
+    background-color: #FFFFFF;
+  }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#F3EFE6; font-family:'IBM Plex Sans',system-ui,sans-serif; color:#262119;">
+
+  <header class="app-header" style="position:sticky; top:0; z-index:20; background:#2E2924; color:#F3EFE6; padding:14px 22px; display:flex; align-items:center; gap:26px; flex-wrap:wrap; box-shadow:0 2px 0 rgba(0,0,0,0.12);">
+    <button onClick="{{ goDashboard }}" style="display:flex; flex-direction:column; gap:1px; line-height:1.15; background:transparent; border:0; padding:0; text-align:left; color:#F3EFE6;">
+      <span class="brand-name" style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.01em;">{{ nombreLocal }}</span>
+      <span style="font-size:12px; opacity:0.6; letter-spacing:0.06em;">Panadería y Café</span>
+    </button>
+
+    <nav class="app-nav" style="display:flex; gap:6px; flex-wrap:wrap;">
+      <button onClick="{{ goDashboard }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Mesas
+        <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
+      </button>
+      <button onClick="{{ goCatalogo }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Catálogo
+        <sc-if value="{{ isCatalogo }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
+      </button>
+      <button onClick="{{ goBar }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Bar
+        <sc-if value="{{ isBar }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
+      </button>
+      <button onClick="{{ goResumen }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Resumen del día
+        <sc-if value="{{ isResumen }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
+      </button>
+    </nav>
+
+    <div class="app-cash" style="margin-left:auto; display:flex; align-items:center; gap:18px;">
+      <div style="text-align:right;">
+        <div style="font-size:11px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.6;">Caja del día</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:22px; color:#9C7A3E;">{{ totalDiaFmt }}</div>
+      </div>
+      <div class="cash-date" style="font-size:13px; opacity:0.7; border-left:1px solid rgba(237,231,216,0.25); padding-left:18px; white-space:nowrap;">{{ fechaHoy }}</div>
+    </div>
+  </header>
+
+  <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+  <main class="app-main" style="padding:26px 22px 60px; max-width:1400px; margin:0 auto;">
+
+    <section style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr)); gap:14px; margin-bottom:26px;">
+      <div class="hero-stat" style="grid-column:span 2; min-width:0; background:#2E2924; color:#F3EFE6; border-radius:18px; padding:22px 26px; display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65; margin-bottom:6px;">Total de ganancias del día</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(40px,6vw,64px); line-height:1; color:#9C7A3E;">{{ totalDiaFmt }}</div>
+      </div>
+      <div style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:20px 22px;">
+        <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:#87806F; margin-bottom:8px;">Mesas ocupadas</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:38px; line-height:1;">{{ ocupadasLabel }}</div>
+      </div>
+      <div style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:20px 22px;">
+        <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:#87806F; margin-bottom:8px;">Pedidos cerrados</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:38px; line-height:1;">{{ pedidosCerrados }}</div>
+      </div>
+    </section>
+
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:14px;">
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-size:20px; margin:0; letter-spacing:-0.01em;">Mesas</h2>
+      <div style="display:flex; gap:16px; margin-left:auto; font-size:13px; color:#655D4E;">
+        <span style="display:flex; align-items:center; gap:7px;"><span style="width:14px; height:14px; border-radius:4px; background:#8C5040;"></span>Ocupada</span>
+        <span style="display:flex; align-items:center; gap:7px;"><span style="width:14px; height:14px; border-radius:4px; background:#D9DCC8; border:1px solid #B8BCA1;"></span>Libre</span>
+      </div>
+    </div>
+
+    <section style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(190px,100%),1fr)); gap:14px;">
+      <button onClick="{{ mostradorCard.open }}" style="border:0; padding:0; border-radius:16px; overflow:hidden; text-align:left; display:block; width:100%; box-shadow:0 2px 0 rgba(46,41,36,0.12);" style-hover="transform:translateY(-2px)">
+        <div style="background:#6B5A3F; color:#F2ECE0; padding:18px 20px 20px; min-height:150px; display:flex; flex-direction:column;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span class="mesa-label-lg" style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; line-height:1.1;">Mostrador</span>
+            <span style="font-size:12px; font-weight:700; letter-spacing:0.1em; background:rgba(255,255,255,0.16); padding:5px 9px; border-radius:999px; white-space:nowrap;">PARA LLEVAR</span>
+          </div>
+          <div style="margin-top:auto; padding-top:18px;">
+            <div style="font-size:12px; opacity:0.8; margin-bottom:2px;">{{ mostradorCard.ventasLabel }}</div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:27px; line-height:1;">{{ mostradorCard.totalFmt }}</div>
+          </div>
+        </div>
+      </button>
+      <sc-for list="{{ mesas }}" as="mesa" hint-placeholder-count="14">
+        <button onClick="{{ mesa.open }}" style="border:0; padding:0; border-radius:16px; overflow:hidden; text-align:left; display:block; width:100%; box-shadow:0 2px 0 rgba(46,41,36,0.12);" style-hover="transform:translateY(-2px)">
+          <sc-if value="{{ mesa.ocupada }}">
+            <div style="background:#8C5040; color:#F2ECE0; padding:18px 20px 20px; min-height:150px; display:flex; flex-direction:column;">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span class="mesa-label-lg" style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:34px; line-height:1;">{{ mesa.label }}</span>
+                <span style="font-size:12px; font-weight:700; letter-spacing:0.1em; background:rgba(255,255,255,0.16); padding:5px 9px; border-radius:999px;">OCUPADA</span>
+              </div>
+              <div style="margin-top:auto; padding-top:18px;">
+                <div style="font-size:12px; opacity:0.8; margin-bottom:2px;">{{ mesa.itemsLabel }}</div>
+                <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:27px; line-height:1;">{{ mesa.totalFmt }}</div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ mesa.libre }}">
+            <div style="background:#ECEEE2; color:#4E5540; padding:18px 20px 20px; min-height:150px; display:flex; flex-direction:column; border:2px solid #D2D5C1;">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span class="mesa-label-lg" style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:34px; line-height:1;">{{ mesa.label }}</span>
+                <span style="font-size:12px; font-weight:700; letter-spacing:0.1em; background:#D9DCC8; padding:5px 9px; border-radius:999px;">LIBRE</span>
+              </div>
+              <div style="margin-top:auto; padding-top:18px; font-size:14px; color:#66695A;">{{ mesa.libreNota }}</div>
+            </div>
+          </sc-if>
+        </button>
+      </sc-for>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isMesa }}">
+  <main class="app-main" style="padding:22px 22px 60px; max-width:1400px; margin:0 auto;">
+    <button onClick="{{ goDashboard }}" style="background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:15px; font-weight:600; padding:10px 16px; border-radius:10px; margin-bottom:18px;" style-hover="background:#E9E2D2">← Volver a mesas</button>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr)); gap:20px; align-items:start;">
+
+      <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
+        <div style="padding:20px 22px; border-bottom:2px solid #E9E2D2; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0;">{{ mesaLabel }}</h2>
+          <span style="font-size:13px; font-weight:700; letter-spacing:0.08em; padding:6px 11px; border-radius:999px; background:#E7E0D0; color:#6E6656;">{{ mesaEstado }}</span>
+          <button onClick="{{ abrirCatalogo }}" style="margin-left:auto; background:#6B5A3F; color:#F2ECE0; border:0; font-size:16px; font-weight:700; padding:14px 20px; border-radius:12px;" style-hover="background:#574A34">+ Agregar producto</button>
+        </div>
+
+        <sc-if value="{{ mesaVacia }}">
+          <div style="padding:54px 22px; text-align:center; color:#8F8776;">
+            <div style="font-size:17px; margin-bottom:14px;">Todavía no hay productos cargados en esta mesa.</div>
+            <button onClick="{{ abrirCatalogo }}" style="background:#9C7A3E; color:#262119; border:0; font-size:16px; font-weight:700; padding:14px 22px; border-radius:12px;">Abrir catálogo</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mesaConItems }}">
+          <div>
+            <sc-for list="{{ items }}" as="item" hint-placeholder-count="3">
+              <div class="item-row" style="display:flex; align-items:center; flex-wrap:wrap; gap:10px 14px; padding:14px 22px; border-bottom:1px solid #E7E0D0;">
+                <div style="flex:1; min-width:140px;">
+                  <div style="font-size:17px; font-weight:600;">{{ item.nombre }}</div>
+                  <div style="font-size:13px; color:#8F8776;">{{ item.unitLabel }}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button onClick="{{ item.dec }}" style="width:46px; height:46px; border-radius:12px; border:2px solid #D6CEBB; background:#FBFAF6; font-size:22px; font-weight:700; color:#6E6656;" style-hover="background:#E9E2D2">−</button>
+                  <span style="min-width:34px; text-align:center; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:20px;">{{ item.qty }}</span>
+                  <button onClick="{{ item.inc }}" style="width:46px; height:46px; border-radius:12px; border:2px solid #D6CEBB; background:#FBFAF6; font-size:22px; font-weight:700; color:#6E6656;" style-hover="background:#E9E2D2">+</button>
+                </div>
+                <div class="item-subtotal" style="width:120px; text-align:right; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:19px;">{{ item.subtotalFmt }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+
+      <aside style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:#2E2924; color:#F3EFE6; border-radius:18px; padding:22px 24px;">
+          <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65;">Total de la mesa</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:52px; line-height:1.1; color:#9C7A3E;">{{ mesaTotalFmt }}</div>
+          <div style="font-size:14px; opacity:0.7;">{{ mesaItemsLabel }}</div>
+          <button onClick="{{ abrirPago }}" style="width:100%; margin-top:18px; background:#9C7A3E; color:#262119; border:0; font-size:18px; font-weight:700; padding:18px; border-radius:14px;" style-hover="background:#87682F">Cerrar cuenta</button>
+          <button onClick="{{ abrirConfirmVaciar }}" style="width:100%; margin-top:8px; background:transparent; color:#F3EFE6; border:2px solid rgba(237,231,216,0.25); font-size:15px; font-weight:600; padding:12px; border-radius:12px;" style-hover="background:rgba(237,231,216,0.1)">Vaciar pedido</button>
+        </div>
+
+        <div style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:18px 20px;">
+          <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:17px; margin:0 0 12px;">Historial del día · {{ mesaLabel }}</h3>
+          <sc-if value="{{ sinHistorial }}">
+            <div style="font-size:14px; color:#8F8776; padding:6px 0 4px;">Sin pedidos cerrados todavía en esta mesa.</div>
+          </sc-if>
+          <sc-for list="{{ historial }}" as="h" hint-placeholder-count="2">
+            <div style="border-top:1px solid #E7E0D0;">
+              <button class="hist-row" onClick="{{ h.toggle }}" style="display:flex; align-items:center; flex-wrap:wrap; gap:6px 12px; width:100%; padding:11px 0; background:transparent; border:0; text-align:left; color:inherit;" style-hover="opacity:0.75">
+                <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:17px; width:56px;">{{ h.hora }}</span>
+                <span style="flex:1; min-width:0; font-size:14px; color:#655D4E;">{{ h.detalle }}</span>
+                <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:17px;">{{ h.totalFmt }}</span>
+                <span style="font-size:11px; color:#8F8776; width:14px; text-align:center;">{{ h.chevron }}</span>
+              </button>
+              <sc-if value="{{ h.abierto }}">
+                <div style="padding:0 0 12px 56px; display:flex; flex-direction:column; gap:5px;">
+                  <sc-for list="{{ h.productos }}" as="pr" hint-placeholder-count="2">
+                    <div style="display:flex; justify-content:space-between; gap:10px; font-size:13px; color:#6E6656;">
+                      <span>{{ pr.label }}</span>
+                      <span style="white-space:nowrap;">{{ pr.subtotalFmt }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </aside>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isMostrador }}">
+  <main class="app-main" style="padding:22px 22px 60px; max-width:1400px; margin:0 auto;">
+    <button onClick="{{ goDashboard }}" style="background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:15px; font-weight:600; padding:10px 16px; border-radius:10px; margin-bottom:18px;" style-hover="background:#E9E2D2">← Volver a mesas</button>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr)); gap:20px; align-items:start;">
+
+      <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
+        <div style="padding:20px 22px; border-bottom:2px solid #E9E2D2; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0;">{{ mesaLabel }}</h2>
+          <span style="font-size:13px; font-weight:700; letter-spacing:0.08em; padding:6px 11px; border-radius:999px; background:#E7E0D0; color:#6E6656;">VENTA PARA LLEVAR</span>
+          <button onClick="{{ abrirCatalogo }}" style="margin-left:auto; background:#6B5A3F; color:#F2ECE0; border:0; font-size:16px; font-weight:700; padding:14px 20px; border-radius:12px;" style-hover="background:#574A34">+ Agregar producto</button>
+        </div>
+
+        <sc-if value="{{ mesaVacia }}">
+          <div style="padding:54px 22px; text-align:center; color:#8F8776;">
+            <div style="font-size:17px; margin-bottom:14px;">Todavía no hay productos cargados en esta venta.</div>
+            <button onClick="{{ abrirCatalogo }}" style="background:#9C7A3E; color:#262119; border:0; font-size:16px; font-weight:700; padding:14px 22px; border-radius:12px;">Abrir catálogo</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mesaConItems }}">
+          <div>
+            <sc-for list="{{ items }}" as="item" hint-placeholder-count="3">
+              <div class="item-row" style="display:flex; align-items:center; flex-wrap:wrap; gap:10px 14px; padding:14px 22px; border-bottom:1px solid #E7E0D0;">
+                <div style="flex:1; min-width:140px;">
+                  <div style="font-size:17px; font-weight:600;">{{ item.nombre }}</div>
+                  <div style="font-size:13px; color:#8F8776;">{{ item.unitLabel }}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button onClick="{{ item.dec }}" style="width:46px; height:46px; border-radius:12px; border:2px solid #D6CEBB; background:#FBFAF6; font-size:22px; font-weight:700; color:#6E6656;" style-hover="background:#E9E2D2">−</button>
+                  <span style="min-width:34px; text-align:center; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:20px;">{{ item.qty }}</span>
+                  <button onClick="{{ item.inc }}" style="width:46px; height:46px; border-radius:12px; border:2px solid #D6CEBB; background:#FBFAF6; font-size:22px; font-weight:700; color:#6E6656;" style-hover="background:#E9E2D2">+</button>
+                </div>
+                <div class="item-subtotal" style="width:120px; text-align:right; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:19px;">{{ item.subtotalFmt }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+
+      <aside style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:#2E2924; color:#F3EFE6; border-radius:18px; padding:22px 24px;">
+          <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65;">Total a cobrar</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:52px; line-height:1.1; color:#9C7A3E;">{{ mesaTotalFmt }}</div>
+          <div style="font-size:14px; opacity:0.7;">{{ mesaItemsLabel }}</div>
+          <button onClick="{{ abrirPago }}" style="width:100%; margin-top:18px; background:#9C7A3E; color:#262119; border:0; font-size:18px; font-weight:700; padding:18px; border-radius:14px;" style-hover="background:#87682F">Cobrar y generar ticket</button>
+          <button onClick="{{ abrirConfirmVaciar }}" style="width:100%; margin-top:8px; background:transparent; color:#F3EFE6; border:2px solid rgba(237,231,216,0.25); font-size:15px; font-weight:600; padding:12px; border-radius:12px;" style-hover="background:rgba(237,231,216,0.1)">Vaciar pedido</button>
+        </div>
+
+        <div style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:18px 20px;">
+          <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:17px; margin:0 0 12px;">Ventas del mostrador hoy</h3>
+          <sc-if value="{{ sinHistorial }}">
+            <div style="font-size:14px; color:#8F8776; padding:6px 0 4px;">Sin ventas todavía hoy.</div>
+          </sc-if>
+          <sc-for list="{{ historial }}" as="h" hint-placeholder-count="2">
+            <div style="border-top:1px solid #E7E0D0;">
+              <button class="hist-row" onClick="{{ h.toggle }}" style="display:flex; align-items:center; flex-wrap:wrap; gap:6px 12px; width:100%; padding:11px 0; background:transparent; border:0; text-align:left; color:inherit;" style-hover="opacity:0.75">
+                <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:17px; width:56px;">{{ h.hora }}</span>
+                <span style="flex:1; min-width:0; font-size:14px; color:#655D4E;">{{ h.detalle }}</span>
+                <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:17px;">{{ h.totalFmt }}</span>
+                <span style="font-size:11px; color:#8F8776; width:14px; text-align:center;">{{ h.chevron }}</span>
+              </button>
+              <sc-if value="{{ h.abierto }}">
+                <div style="padding:0 0 12px 56px; display:flex; flex-direction:column; gap:5px;">
+                  <sc-for list="{{ h.productos }}" as="pr" hint-placeholder-count="2">
+                    <div style="display:flex; justify-content:space-between; gap:10px; font-size:13px; color:#6E6656;">
+                      <span>{{ pr.label }}</span>
+                      <span style="white-space:nowrap;">{{ pr.subtotalFmt }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </aside>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isCatalogo }}">
+  <main class="app-main" style="padding:26px 22px 60px; max-width:1400px; margin:0 auto;">
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0 0 4px;">Catálogo</h2>
+    <p style="margin:0 0 22px; color:#87806F; font-size:15px;">Productos y combos disponibles para el mostrador de panadería.</p>
+
+    <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:18px 20px; margin-bottom:20px;">
+      <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:17px; margin:0 0 4px;">Categorías</h3>
+      <p style="margin:0 0 14px; color:#87806F; font-size:13px;">Propias de Catálogo (panadería) — independientes de las del Bar.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+        <sc-for list="{{ categoriasAdmin }}" as="cat" hint-placeholder-count="5">
+          <span style="display:inline-flex; align-items:center; gap:6px; background:#FCFBF8; border:2px solid #D6CEBB; padding:7px 7px 7px 14px; border-radius:999px; font-size:14px; font-weight:600; color:#3B3327;">
+            {{ cat.nombre }}
+            <button onClick="{{ cat.del }}" style="width:22px; height:22px; border-radius:999px; border:0; background:#EFE6E1; color:#7A4438; font-weight:700; font-size:13px; line-height:1; padding:0;" style-hover="background:#E5D5CC">×</button>
+          </span>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input value="{{ categoriaNueva }}" onChange="{{ onCategoriaNueva }}" placeholder="Nueva categoría" style="flex:1; min-width:180px; font-size:15px; padding:12px 14px; border:2px solid #D6CEBB; border-radius:10px; background:#FCFBF8; color:#262119;" />
+        <button onClick="{{ agregarCategoria }}" style="background:#6B5A3F; color:#F2ECE0; border:0; font-size:15px; font-weight:700; padding:12px 20px; border-radius:10px;" style-hover="background:#574A34">Agregar</button>
+      </div>
+    </section>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:20px; align-items:start;">
+
+      <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:20px 22px;">
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:19px; margin:0 0 16px;">{{ formTitulo }}</h3>
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Nombre</label>
+        <input value="{{ formNombre }}" onChange="{{ onNombre }}" placeholder="Ej. Medialuna de manteca" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; margin-bottom:14px; color:#262119;" />
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+          <div style="flex:1; min-width:130px;">
+            <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Precio panadería</label>
+            <input value="{{ formPrecio }}" onChange="{{ onPrecio }}" inputMode="numeric" placeholder="0" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119;" />
+          </div>
+          <div style="flex:1; min-width:130px;">
+            <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Stock</label>
+            <input value="{{ formStock }}" onChange="{{ onStock }}" inputMode="numeric" placeholder="0" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119;" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+          <div style="flex:1; min-width:150px;">
+            <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Categoría</label>
+            <select value="{{ formCategoria }}" onChange="{{ onCategoria }}" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119;">
+              <sc-for list="{{ categorias }}" as="c" hint-placeholder-count="4">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+          </div>
+        </div>
+
+        <button onClick="{{ toggleCombo }}" style="display:flex; align-items:center; gap:12px; width:100%; background:#FCFBF8; border:2px solid #D6CEBB; border-radius:12px; padding:14px; margin-bottom:16px; text-align:left;">
+          <span style="width:26px; height:26px; border-radius:7px; border:2px solid #6B5A3F; display:flex; align-items:center; justify-content:center; color:#6B5A3F; font-weight:800; font-size:17px;">{{ comboCheck }}</span>
+          <span style="font-size:16px; font-weight:600;">Es un combo</span>
+        </button>
+
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ guardarProducto }}" style="flex:1; background:#6B5A3F; color:#F2ECE0; border:0; font-size:17px; font-weight:700; padding:16px; border-radius:12px;" style-hover="background:#574A34">Guardar</button>
+          <button onClick="{{ limpiarForm }}" style="background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:16px 18px; border-radius:12px;" style-hover="background:#E9E2D2">Limpiar</button>
+        </div>
+      </section>
+
+      <section class="cat-list" style="grid-column:span 2; min-width:0; background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
+        <div style="display:flex; gap:8px; padding:16px 18px; border-bottom:2px solid #E9E2D2; flex-wrap:wrap;">
+          <sc-for list="{{ chips }}" as="chip" hint-placeholder-count="5">
+            <button onClick="{{ chip.onClick }}" style="{{ chip.style }}">{{ chip.label }}</button>
+          </sc-for>
+        </div>
+        <sc-for list="{{ productosCatalogo }}" as="p" hint-placeholder-count="6">
+          <div class="cat-row" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; padding:13px 18px; border-bottom:1px solid #E7E0D0;">
+            <div style="flex:1; min-width:140px;">
+              <div style="font-size:17px; font-weight:600; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                {{ p.nombre }}
+                <sc-if value="{{ p.combo }}"><span style="font-size:11px; font-weight:700; letter-spacing:0.1em; background:#9C7A3E; color:#262119; padding:3px 8px; border-radius:999px;">COMBO</span></sc-if>
+                <span style="font-size:11px; font-weight:700; letter-spacing:0.06em; background:{{ p.stockBg }}; color:{{ p.stockColor }}; padding:3px 8px; border-radius:999px;">{{ p.stockLabel }}</span>
+              </div>
+              <div style="font-size:13px; color:#8F8776;">{{ p.categoria }}</div>
+            </div>
+            <div class="cat-price" style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:19px; width:110px; text-align:right;">{{ p.precioFmt }}</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ p.edit }}" style="background:#FCFBF8; border:2px solid #D6CEBB; color:#6E6656; font-size:15px; font-weight:600; padding:11px 16px; border-radius:10px;" style-hover="background:#E9E2D2">Editar</button>
+              <button onClick="{{ p.del }}" style="background:#FCFBF8; border:2px solid #D7C7BE; color:#7A4438; font-size:15px; font-weight:600; padding:11px 14px; border-radius:10px;" style-hover="background:#EFE6E1">Borrar</button>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isBar }}">
+  <main class="app-main" style="padding:26px 22px 60px; max-width:1400px; margin:0 auto;">
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0 0 4px;">Bar</h2>
+    <p style="margin:0 0 22px; color:#87806F; font-size:15px;">Productos y combos disponibles para servir en las mesas.</p>
+
+    <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:18px 20px; margin-bottom:20px;">
+      <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:17px; margin:0 0 4px;">Categorías</h3>
+      <p style="margin:0 0 14px; color:#87806F; font-size:13px;">Propias del Bar — independientes de las de Catálogo (panadería).</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+        <sc-for list="{{ categoriasAdmin }}" as="cat" hint-placeholder-count="4">
+          <span style="display:inline-flex; align-items:center; gap:6px; background:#FCFBF8; border:2px solid #D6CEBB; padding:7px 7px 7px 14px; border-radius:999px; font-size:14px; font-weight:600; color:#3B3327;">
+            {{ cat.nombre }}
+            <button onClick="{{ cat.del }}" style="width:22px; height:22px; border-radius:999px; border:0; background:#EFE6E1; color:#7A4438; font-weight:700; font-size:13px; line-height:1; padding:0;" style-hover="background:#E5D5CC">×</button>
+          </span>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input value="{{ categoriaNueva }}" onChange="{{ onCategoriaNueva }}" placeholder="Nueva categoría" style="flex:1; min-width:180px; font-size:15px; padding:12px 14px; border:2px solid #D6CEBB; border-radius:10px; background:#FCFBF8; color:#262119;" />
+        <button onClick="{{ agregarCategoria }}" style="background:#6B5A3F; color:#F2ECE0; border:0; font-size:15px; font-weight:700; padding:12px 20px; border-radius:10px;" style-hover="background:#574A34">Agregar</button>
+      </div>
+    </section>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:20px; align-items:start;">
+
+      <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:20px 22px;">
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:19px; margin:0 0 16px;">{{ formTitulo }}</h3>
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Nombre</label>
+        <input value="{{ formNombre }}" onChange="{{ onNombre }}" placeholder="Ej. Medialuna de manteca" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; margin-bottom:14px; color:#262119;" />
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+          <div style="flex:1; min-width:130px;">
+            <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Precio bar</label>
+            <input value="{{ formPrecio }}" onChange="{{ onPrecio }}" inputMode="numeric" placeholder="0" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119;" />
+          </div>
+          <div style="flex:1; min-width:130px;">
+            <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Stock</label>
+            <input value="{{ formStock }}" onChange="{{ onStock }}" inputMode="numeric" placeholder="0" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119;" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+          <div style="flex:1; min-width:150px;">
+            <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Categoría</label>
+            <select value="{{ formCategoria }}" onChange="{{ onCategoria }}" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119;">
+              <sc-for list="{{ categorias }}" as="c" hint-placeholder-count="4">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+          </div>
+        </div>
+
+        <button onClick="{{ toggleCombo }}" style="display:flex; align-items:center; gap:12px; width:100%; background:#FCFBF8; border:2px solid #D6CEBB; border-radius:12px; padding:14px; margin-bottom:16px; text-align:left;">
+          <span style="width:26px; height:26px; border-radius:7px; border:2px solid #6B5A3F; display:flex; align-items:center; justify-content:center; color:#6B5A3F; font-weight:800; font-size:17px;">{{ comboCheck }}</span>
+          <span style="font-size:16px; font-weight:600;">Es un combo</span>
+        </button>
+
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ guardarProducto }}" style="flex:1; background:#6B5A3F; color:#F2ECE0; border:0; font-size:17px; font-weight:700; padding:16px; border-radius:12px;" style-hover="background:#574A34">Guardar</button>
+          <button onClick="{{ limpiarForm }}" style="background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:16px 18px; border-radius:12px;" style-hover="background:#E9E2D2">Limpiar</button>
+        </div>
+      </section>
+
+      <section class="cat-list" style="grid-column:span 2; min-width:0; background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
+        <div style="display:flex; gap:8px; padding:16px 18px; border-bottom:2px solid #E9E2D2; flex-wrap:wrap;">
+          <sc-for list="{{ chips }}" as="chip" hint-placeholder-count="5">
+            <button onClick="{{ chip.onClick }}" style="{{ chip.style }}">{{ chip.label }}</button>
+          </sc-for>
+        </div>
+        <sc-for list="{{ productosBar }}" as="p" hint-placeholder-count="6">
+          <div class="cat-row" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; padding:13px 18px; border-bottom:1px solid #E7E0D0;">
+            <div style="flex:1; min-width:140px;">
+              <div style="font-size:17px; font-weight:600; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                {{ p.nombre }}
+                <sc-if value="{{ p.combo }}"><span style="font-size:11px; font-weight:700; letter-spacing:0.1em; background:#9C7A3E; color:#262119; padding:3px 8px; border-radius:999px;">COMBO</span></sc-if>
+                <span style="font-size:11px; font-weight:700; letter-spacing:0.06em; background:{{ p.stockBg }}; color:{{ p.stockColor }}; padding:3px 8px; border-radius:999px;">{{ p.stockLabel }}</span>
+              </div>
+              <div style="font-size:13px; color:#8F8776;">{{ p.categoria }}</div>
+            </div>
+            <div class="cat-price" style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:19px; width:110px; text-align:right;">{{ p.precioFmt }}</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ p.edit }}" style="background:#FCFBF8; border:2px solid #D6CEBB; color:#6E6656; font-size:15px; font-weight:600; padding:11px 16px; border-radius:10px;" style-hover="background:#E9E2D2">Editar</button>
+              <button onClick="{{ p.del }}" style="background:#FCFBF8; border:2px solid #D7C7BE; color:#7A4438; font-size:15px; font-weight:600; padding:11px 14px; border-radius:10px;" style-hover="background:#EFE6E1">Borrar</button>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isResumen }}">
+  <main class="app-main" style="padding:26px 22px 60px; max-width:1200px; margin:0 auto;">
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0 0 4px;">Resumen del día</h2>
+    <p style="margin:0 0 22px; color:#87806F; font-size:15px;">{{ fechaHoy }} · cierre de caja</p>
+
+    <div style="background:#2E2924; color:#F3EFE6; border-radius:20px; padding:28px 30px; display:flex; gap:30px; flex-wrap:wrap; align-items:flex-end; margin-bottom:20px;">
+      <div>
+        <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65; margin-bottom:6px;">Total de ganancias</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(44px,7vw,72px); line-height:1; color:#9C7A3E;">{{ totalDiaFmt }}</div>
+        <sc-if value="{{ hayMovimientos }}">
+          <div style="font-size:13px; opacity:0.75; margin-top:6px;">Ventas {{ totalVentasFmt }} {{ movimientosNetoFmt }} movimientos de caja</div>
+        </sc-if>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:30px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.65;">Mesas atendidas</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:34px;">{{ mesasAtendidas }}</div>
+        </div>
+        <div>
+          <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.65;">Pedidos cerrados</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:34px;">{{ pedidosCerrados }}</div>
+        </div>
+        <div>
+          <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.65;">Ticket promedio</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:34px;">{{ ticketPromedio }}</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:19px; margin:0 0 12px;">Desglose por medio de pago</h3>
+    <section style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr)); gap:14px; margin-bottom:26px;">
+      <sc-for list="{{ pagos }}" as="pago" hint-placeholder-count="4">
+        <div style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:16px; padding:20px 22px;">
+          <div style="font-size:14px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#87806F; margin-bottom:10px;">{{ pago.nombre }}</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:32px; line-height:1;">{{ pago.totalFmt }}</div>
+          <div style="height:8px; border-radius:999px; background:#E9E2D2; margin-top:14px; overflow:hidden;">
+            <div style="{{ pago.barStyle }}"></div>
+          </div>
+          <div style="font-size:13px; color:#8F8776; margin-top:8px;">{{ pago.detalle }}</div>
+        </div>
+      </sc-for>
+    </section>
+
+    <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:19px; margin:0 0 12px;">Movimientos de caja</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); gap:20px; align-items:start; margin-bottom:26px;">
+
+      <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:20px 22px;">
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Nombre de quien retira/ingresa</label>
+        <input value="{{ movFormNombre }}" onChange="{{ onMovNombre }}" placeholder="Ej. Juan" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; margin-bottom:14px; color:#262119;" />
+
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Tipo de movimiento</label>
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <button onClick="{{ elegirIngreso }}" style="{{ movTipoIngresoStyle }}">Ingreso</button>
+          <button onClick="{{ elegirRetiro }}" style="{{ movTipoRetiroStyle }}">Retiro</button>
+        </div>
+
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Monto</label>
+        <input value="{{ movFormMonto }}" onChange="{{ onMovMonto }}" inputMode="numeric" placeholder="0" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119; margin-bottom:16px;" />
+
+        <button onClick="{{ registrarMovimiento }}" style="width:100%; background:#6B5A3F; color:#F2ECE0; border:0; font-size:17px; font-weight:700; padding:16px; border-radius:12px;" style-hover="background:#574A34">Registrar movimiento</button>
+      </section>
+
+      <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:2px solid #E9E2D2; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <span style="font-family:'Bricolage Grotesque',sans-serif; font-size:17px; font-weight:700;">Historial de movimientos</span>
+          <span style="margin-left:auto; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:16px;">{{ movimientosNetoFmt }}</span>
+        </div>
+        <sc-if value="{{ sinMovimientos }}">
+          <div style="padding:28px 20px; color:#8F8776; font-size:15px;">Todavía no se registraron movimientos hoy.</div>
+        </sc-if>
+        <sc-for list="{{ movimientos }}" as="mv" hint-placeholder-count="3">
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid #E7E0D0; flex-wrap:wrap;">
+            <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:15px; width:52px;">{{ mv.hora }}</span>
+            <span style="flex:1; min-width:100px; font-size:14px; color:#655D4E;">{{ mv.nombre }}</span>
+            <sc-if value="{{ mv.esIngreso }}"><span style="font-size:11px; font-weight:700; letter-spacing:0.06em; background:#D9DCC8; color:#4E5540; padding:4px 9px; border-radius:999px;">{{ mv.tipoLabel }}</span></sc-if>
+            <sc-if value="{{ mv.esRetiro }}"><span style="font-size:11px; font-weight:700; letter-spacing:0.06em; background:#EFE6E1; color:#7A4438; padding:4px 9px; border-radius:999px;">{{ mv.tipoLabel }}</span></sc-if>
+            <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:16px; min-width:90px; text-align:right;">{{ mv.montoFmt }}</span>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+
+    <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
+      <div style="padding:16px 20px; border-bottom:2px solid #E9E2D2; font-family:'Bricolage Grotesque',sans-serif; font-size:17px; font-weight:700;">Pedidos cerrados hoy</div>
+      <sc-if value="{{ sinCierres }}">
+        <div style="padding:28px 20px; color:#8F8776; font-size:15px;">Todavía no se cerró ningún pedido hoy.</div>
+      </sc-if>
+      <sc-for list="{{ cierres }}" as="c" hint-placeholder-count="3">
+        <div class="cierre-row" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; padding:13px 20px; border-bottom:1px solid #E7E0D0;">
+          <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:17px; width:60px;">{{ c.hora }}</span>
+          <span style="font-size:16px; font-weight:600; width:90px;">{{ c.mesa }}</span>
+          <span style="flex:1; min-width:120px; font-size:14px; color:#655D4E;">{{ c.detalle }}</span>
+          <span style="font-size:14px; font-weight:600; color:#6E6656; background:#E7E0D0; padding:5px 11px; border-radius:999px;">{{ c.metodo }}</span>
+          <span class="cierre-total" style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:18px; width:110px; text-align:right;">{{ c.totalFmt }}</span>
+        </div>
+      </sc-for>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ showCatalogoModal }}">
+    <div style="position:fixed; inset:0; z-index:50; background:rgba(38,33,25,0.55); display:flex; align-items:center; justify-content:center; padding:24px;">
+      <div style="background:#F3EFE6; width:100%; max-width:1000px; height:min(720px,88vh); border-radius:22px; display:flex; flex-direction:column; overflow:hidden;">
+        <div style="flex:0 0 auto; padding:18px 22px; background:#FBFAF6; border-bottom:2px solid #DED5C2; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:22px; margin:0;">Agregar a {{ mesaLabel }}</h3>
+          <span style="font-size:15px; color:#87806F;">{{ mesaTotalFmt }}</span>
+          <button onClick="{{ cerrarModales }}" style="margin-left:auto; background:#2E2924; color:#F3EFE6; border:0; font-size:16px; font-weight:700; padding:13px 22px; border-radius:12px;">Listo</button>
+        </div>
+        <div style="flex:0 0 auto; display:flex; gap:8px; padding:14px 22px; flex-wrap:wrap;">
+          <sc-for list="{{ chips }}" as="chip" hint-placeholder-count="5">
+            <button onClick="{{ chip.onClick }}" style="{{ chip.style }}">{{ chip.label }}</button>
+          </sc-for>
+        </div>
+        <div style="flex:1 1 auto; min-height:0; overflow:auto; padding:0 22px 26px;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(210px,100%),1fr)); gap:12px; align-content:start;">
+            <sc-for list="{{ productosPicker }}" as="p" hint-placeholder-count="8">
+              <button onClick="{{ p.add }}" style="{{ p.pickerStyle }}">
+                <div style="font-size:16px; font-weight:600; line-height:1.25;">{{ p.nombre }}</div>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                  <sc-if value="{{ p.combo }}"><span style="font-size:11px; font-weight:700; letter-spacing:0.1em; background:#9C7A3E; color:#262119; padding:3px 8px; border-radius:999px;">COMBO</span></sc-if>
+                  <sc-if value="{{ p.stockNote }}"><span style="font-size:11px; font-weight:700; letter-spacing:0.06em; color:#7A4438;">{{ p.stockNote }}</span></sc-if>
+                </div>
+                <div style="margin-top:auto; padding-top:10px; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:21px; color:#6B5A3F;">{{ p.precioFmt }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showPago }}">
+    <div style="position:fixed; inset:0; z-index:60; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div class="modal-box" style="background:#F3EFE6; width:100%; max-width:620px; border-radius:22px; overflow:hidden;">
+        <div style="background:#2E2924; color:#F3EFE6; padding:24px 26px;">
+          <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65;">Cerrar cuenta · {{ mesaLabel }}</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:50px; line-height:1.1; color:#9C7A3E;">{{ mesaTotalFmt }}</div>
+        </div>
+        <div style="padding:22px 26px 26px;">
+          <div style="font-size:15px; font-weight:600; color:#87806F; margin-bottom:12px;">Medio de pago</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr)); gap:12px;">
+            <sc-for list="{{ metodos }}" as="m" hint-placeholder-count="4">
+              <button onClick="{{ m.cobrar }}" style="background:#FBFAF6; border:2px solid #D6CEBB; border-radius:14px; padding:22px 18px; font-size:19px; font-weight:700; color:#262119; text-align:left;" style-hover="border-color:#6B5A3F; background:#FCFBF8">{{ m.nombre }}</button>
+            </sc-for>
+          </div>
+          <button onClick="{{ cerrarModales }}" style="width:100%; margin-top:14px; background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:14px; border-radius:12px;">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showConfirmVaciar }}">
+    <div style="position:fixed; inset:0; z-index:60; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div style="background:#F3EFE6; width:100%; max-width:440px; border-radius:22px; padding:26px;">
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:21px; margin:0 0 10px;">¿Vaciar el pedido de {{ mesaLabel }}?</h3>
+        <p style="margin:0 0 22px; font-size:15px; color:#655D4E; line-height:1.4;">Se van a borrar los {{ mesaItemsLabel }} cargados en esta mesa sin cobrarlos. Esta acción no se puede deshacer.</p>
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ cerrarModales }}" style="flex:1; background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:14px; border-radius:12px;" style-hover="background:#E9E2D2">Cancelar</button>
+          <button onClick="{{ confirmarVaciarMesa }}" style="flex:1; background:#8C5040; color:#F2ECE0; border:0; font-size:16px; font-weight:700; padding:14px; border-radius:12px;" style-hover="background:#7A4438">Sí, vaciar</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showTicket }}">
+    <div style="position:fixed; inset:0; z-index:70; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div style="width:100%; max-width:360px; display:flex; flex-direction:column; align-items:center; gap:14px;">
+        <div class="ticket-print modal-box" style="background:#FFFFFF; width:100%; border-radius:10px 10px 0 0; overflow:hidden; color:#262119; font-family:'IBM Plex Mono',ui-monospace,'Courier New',monospace; box-shadow:0 14px 34px rgba(38,33,25,0.35);">
+          <div style="padding:24px 22px 14px; text-align:center;">
+            <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:19px; letter-spacing:0.01em;">{{ nombreLocal }}</div>
+            <div style="font-size:11px; color:#8F8776; margin-top:2px; letter-spacing:0.08em; text-transform:uppercase;">Panadería y Café</div>
+            <div style="border-top:1px dashed #B8AF9C; margin:14px 0 10px;"></div>
+            <div style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:#655D4E;">Comprobante de venta</div>
+            <div style="font-size:14px; font-weight:700; margin-top:5px;">{{ ticket.tipo }} · {{ ticket.numeroFmt }}</div>
+            <div style="font-size:11px; color:#8F8776; margin-top:2px;">{{ ticket.fecha }} — {{ ticket.hora }}hs</div>
+          </div>
+          <div style="padding:0 22px;"><div style="border-top:1px dashed #B8AF9C;"></div></div>
+          <div style="padding:10px 22px 2px;">
+            <div style="display:flex; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:#8F8776; padding-bottom:6px;">
+              <span style="width:26px;">Cant</span>
+              <span style="flex:1;">Producto</span>
+              <span style="width:62px; text-align:right;">P.Unit</span>
+              <span style="width:74px; text-align:right;">Importe</span>
+            </div>
+            <sc-for list="{{ ticket.productos }}" as="pr" hint-placeholder-count="3">
+              <div style="display:flex; font-size:13px; padding:4px 0; align-items:baseline;">
+                <span style="width:26px;">{{ pr.qty }}</span>
+                <span style="flex:1; padding-right:6px; word-break:break-word;">{{ pr.nombre }}</span>
+                <span style="width:62px; text-align:right; color:#655D4E;">{{ pr.unitFmt }}</span>
+                <span style="width:74px; text-align:right; font-weight:600;">{{ pr.subtotalFmt }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:4px 22px 0;"><div style="border-top:1px dashed #B8AF9C;"></div></div>
+          <div style="padding:10px 22px 2px; display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="font-size:14px; font-weight:700; letter-spacing:0.05em;">TOTAL</span>
+            <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:23px;">{{ ticket.totalFmt }}</span>
+          </div>
+          <div style="padding:0 22px 16px; text-align:right; font-size:12px; color:#655D4E;">Medio de pago: {{ ticket.metodo }}</div>
+          <div style="padding:0 22px 18px; text-align:center;">
+            <div style="border-top:1px dashed #B8AF9C; margin-bottom:12px;"></div>
+            <div style="font-size:12px; font-weight:600;">¡Gracias por su compra!</div>
+            <div style="font-size:10px; color:#8F8776; margin-top:6px;">Comprobante no válido como factura</div>
+          </div>
+          <div class="ticket-tear"></div>
+        </div>
+        <div style="width:100%; display:flex; gap:10px;">
+          <button onClick="{{ cerrarTicket }}" style="flex:1; background:transparent; border:2px solid rgba(247,239,225,0.4); color:#F3EFE6; font-size:15px; font-weight:600; padding:13px; border-radius:12px;" style-hover="background:rgba(247,239,225,0.1)">Nueva venta</button>
+          <button onClick="{{ imprimirTicket }}" style="flex:1; background:#9C7A3E; color:#262119; border:0; font-size:15px; font-weight:700; padding:13px; border-radius:12px;">Imprimir</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"nombreLocal":{"editor":"text","default":"Chocolate","tsType":"string"},"cantidadMesas":{"editor":"int","default":14,"min":6,"max":24,"tsType":"number"}}'>
+const CATS_PANADERIA = ["Panadería", "Pastelería", "Cafetería", "Sándwiches", "Combos"];
+const CATS_BAR = ["Cafetería", "Bebidas frías", "Sándwiches", "Combos"];
+const SEED = [
+  { id: 1, nombre: "Medialuna de manteca", precioPanaderia: 800, precioBar: 900, stock: 60, categoria: "Panadería", combo: false },
+  { id: 2, nombre: "Medialuna de grasa", precioPanaderia: 700, precioBar: 800, stock: 60, categoria: "Panadería", combo: false },
+  { id: 3, nombre: "Factura surtida", precioPanaderia: 850, precioBar: 950, stock: 50, categoria: "Panadería", combo: false },
+  { id: 4, nombre: "Pan francés (kg)", precioPanaderia: 2900, precioBar: 3200, stock: 25, categoria: "Panadería", combo: false },
+  { id: 5, nombre: "Pan de campo", precioPanaderia: 4100, precioBar: 4500, stock: 12, categoria: "Panadería", combo: false },
+  { id: 6, nombre: "Criollo de grasa", precioPanaderia: 600, precioBar: 700, stock: 50, categoria: "Panadería", combo: false },
+  { id: 7, nombre: "Budín de limón (porción)", precioPanaderia: 2300, precioBar: 2600, stock: 18, categoria: "Pastelería", combo: false },
+  { id: 8, nombre: "Torta rogel (porción)", precioPanaderia: 4300, precioBar: 4800, stock: 10, categoria: "Pastelería", combo: false },
+  { id: 9, nombre: "Lemon pie (porción)", precioPanaderia: 3800, precioBar: 4200, stock: 10, categoria: "Pastelería", combo: false },
+  { id: 10, nombre: "Café con leche", precioPanaderia: 2200, precioBar: 2500, stock: 200, categoria: "Cafetería", combo: false },
+  { id: 11, nombre: "Cortado", precioPanaderia: 1700, precioBar: 1900, stock: 200, categoria: "Cafetería", combo: false },
+  { id: 12, nombre: "Submarino", precioPanaderia: 2900, precioBar: 3200, stock: 150, categoria: "Cafetería", combo: false },
+  { id: 13, nombre: "Té con leche", precioPanaderia: 1500, precioBar: 1700, stock: 200, categoria: "Cafetería", combo: false },
+  { id: 14, nombre: "Jugo de naranja", precioPanaderia: 2500, precioBar: 2800, stock: 40, categoria: "Cafetería", combo: false },
+  { id: 15, nombre: "Tostado jamón y queso", precioPanaderia: 3800, precioBar: 4200, stock: 30, categoria: "Sándwiches", combo: false },
+  { id: 16, nombre: "Sándwich de miga (docena)", precioPanaderia: 9000, precioBar: 9800, stock: 15, categoria: "Sándwiches", combo: false },
+  { id: 17, nombre: "Combo desayuno", precioPanaderia: 3800, precioBar: 4200, stock: 20, categoria: "Combos", combo: true },
+  { id: 18, nombre: "Combo merienda x2", precioPanaderia: 7200, precioBar: 7900, stock: 15, categoria: "Combos", combo: true },
+  { id: 19, nombre: "Combo mateada", precioPanaderia: 5900, precioBar: 6500, stock: 15, categoria: "Combos", combo: true }
+];
+const METODOS = ["Efectivo", "Transferencia", "Débito", "Crédito"];
+
+function money(n) {
+  return "$ " + Math.round(n).toLocaleString("es-AR");
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: "dashboard",
+    activa: null,
+    mesas: Array.from({ length: 24 }, (_, i) => ({ n: i + 1, items: [], historial: [] })),
+    mostrador: { items: [], historial: [] },
+    productos: SEED.slice(),
+    nextId: 100,
+    nextTicket: 1,
+    categoriasPanaderia: CATS_PANADERIA.slice(),
+    categoriasBar: CATS_BAR.slice(),
+    categoriaNuevaPanaderia: "",
+    categoriaNuevaBar: "",
+    filtroPanaderia: "Todos",
+    filtroBar: "Todos",
+    showCatalogoModal: false,
+    showPago: false,
+    showConfirmVaciar: false,
+    showTicket: false,
+    ticket: null,
+    histOpen: null,
+    form: { id: null, area: "panaderia", nombre: "", precio: "", stock: "", categoria: "Panadería", combo: false },
+    movimientos: [],
+    movForm: { nombre: "", tipo: "ingreso", monto: "" }
+  };
+
+  componentDidMount() {
+    // Estado de demostración: algunas mesas con consumo y cierres previos.
+    this.setState(s => {
+      const mesas = s.mesas.map(m => ({ n: m.n, items: [], historial: [] }));
+      mesas[1].items = [{ pid: 10, qty: 2 }, { pid: 1, qty: 6 }];
+      mesas[4].items = [{ pid: 17, qty: 2 }, { pid: 14, qty: 1 }];
+      mesas[6].items = [{ pid: 15, qty: 1 }, { pid: 11, qty: 2 }, { pid: 7, qty: 1 }];
+      mesas[10].items = [{ pid: 18, qty: 1 }];
+      mesas[12].items = [{ pid: 12, qty: 3 }, { pid: 3, qty: 4 }];
+      mesas[0].historial = [{ hora: "08:40", total: 7300, metodo: "Efectivo", unidades: 5, items: [{ pid: 10, qty: 2, precioUnit: 900 }, { pid: 1, qty: 3, precioUnit: 900 }] }];
+      mesas[1].historial = [{ hora: "09:15", total: 12400, metodo: "Débito", unidades: 8, items: [{ pid: 12, qty: 2, precioUnit: 3200 }, { pid: 3, qty: 6, precioUnit: 950 }] }];
+      mesas[3].historial = [{ hora: "10:02", total: 5400, metodo: "Transferencia", unidades: 3, items: [{ pid: 9, qty: 1, precioUnit: 4200 }, { pid: 11, qty: 2, precioUnit: 1900 }] },
+                            { hora: "11:30", total: 9100, metodo: "Crédito", unidades: 6, items: [{ pid: 16, qty: 1, precioUnit: 9800 }, { pid: 4, qty: 1, precioUnit: 3200 }] }];
+      mesas[6].historial = [{ hora: "09:48", total: 6800, metodo: "Efectivo", unidades: 4, items: [{ pid: 10, qty: 2, precioUnit: 2500 }, { pid: 7, qty: 2, precioUnit: 2600 }] }];
+      mesas[8].historial = [{ hora: "10:55", total: 15200, metodo: "Efectivo", unidades: 11, items: [{ pid: 18, qty: 1, precioUnit: 7900 }, { pid: 12, qty: 3, precioUnit: 3200 }, { pid: 3, qty: 4, precioUnit: 950 } ] }];
+      const mostrador = {
+        items: [],
+        historial: [{ hora: "08:20", total: 4400, metodo: "Efectivo", unidades: 3, numero: 1, items: [{ pid: 1, qty: 2, precioUnit: 800 }, { pid: 10, qty: 1, precioUnit: 2200 }] }]
+      };
+      return { mesas, mostrador, nextTicket: 2 };
+    });
+  }
+
+  get count() { return Math.max(1, Math.min(24, this.props.cantidadMesas ?? 14)); }
+  prod(id) { return this.state.productos.find(p => p.id === id); }
+  label(n) { return "Mesa " + String(n).padStart(2, "0"); }
+  priceFor(p, area) { return area === "panaderia" ? p.precioPanaderia : p.precioBar; }
+  totalFor(items, area) {
+    return items.reduce((acc, it) => {
+      const p = this.prod(it.pid);
+      return acc + (p ? this.priceFor(p, area) * it.qty : 0);
+    }, 0);
+  }
+  totalMesa(m) { return this.totalFor(m.items, "bar"); }
+  enMostrador() { return this.state.screen === "mostrador"; }
+
+  setMesa(n, fn) {
+    this.setState(s => ({
+      mesas: s.mesas.map(m => (m.n === n ? fn({ ...m, items: m.items.slice(), historial: m.historial.slice() }) : m))
+    }));
+  }
+
+  setMostrador(fn) {
+    this.setState(s => ({ mostrador: fn({ ...s.mostrador, items: s.mostrador.items.slice(), historial: s.mostrador.historial.slice() }) }));
+  }
+
+  descontarStock(items) {
+    this.setState(s => ({
+      productos: s.productos.map(p => {
+        const it = items.find(x => x.pid === p.id);
+        if (!it) return p;
+        return { ...p, stock: Math.max(0, p.stock - it.qty) };
+      })
+    }));
+  }
+
+  addProd(pid) {
+    if (this.enMostrador()) {
+      this.setMostrador(m => {
+        const i = m.items.findIndex(it => it.pid === pid);
+        if (i >= 0) m.items[i] = { pid, qty: m.items[i].qty + 1 };
+        else m.items.push({ pid, qty: 1 });
+        return m;
+      });
+      return;
+    }
+    const n = this.state.activa;
+    this.setMesa(n, m => {
+      const i = m.items.findIndex(it => it.pid === pid);
+      if (i >= 0) m.items[i] = { pid, qty: m.items[i].qty + 1 };
+      else m.items.push({ pid, qty: 1 });
+      return m;
+    });
+  }
+
+  changeQty(pid, d) {
+    if (this.enMostrador()) {
+      this.setMostrador(m => {
+        const i = m.items.findIndex(it => it.pid === pid);
+        if (i < 0) return m;
+        const q = m.items[i].qty + d;
+        if (q <= 0) m.items.splice(i, 1);
+        else m.items[i] = { pid, qty: q };
+        return m;
+      });
+      return;
+    }
+    const n = this.state.activa;
+    this.setMesa(n, m => {
+      const i = m.items.findIndex(it => it.pid === pid);
+      if (i < 0) return m;
+      const q = m.items[i].qty + d;
+      if (q <= 0) m.items.splice(i, 1);
+      else m.items[i] = { pid, qty: q };
+      return m;
+    });
+  }
+
+  ticketProductos(itemsSnapshot) {
+    return itemsSnapshot.map(it => {
+      const p = this.prod(it.pid) || { nombre: "Producto eliminado" };
+      return {
+        nombre: p.nombre,
+        qty: it.qty,
+        unitFmt: money(it.precioUnit),
+        subtotalFmt: money(it.precioUnit * it.qty)
+      };
+    });
+  }
+
+  cobrar(metodo) {
+    const n = this.state.activa;
+    const mesa = this.state.mesas.find(m => m.n === n);
+    const total = this.totalFor(mesa.items, "bar");
+    if (total <= 0) { this.setState({ showPago: false }); return; }
+    const unidades = mesa.items.reduce((a, it) => a + it.qty, 0);
+    const itemsSnapshot = mesa.items.map(it => {
+      const p = this.prod(it.pid);
+      return { pid: it.pid, qty: it.qty, precioUnit: p ? this.priceFor(p, "bar") : 0 };
+    });
+    const d = new Date();
+    const hora = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    this.setMesa(n, m => {
+      m.historial = m.historial.concat([{ hora, total, metodo, unidades, items: itemsSnapshot }]);
+      m.items = [];
+      return m;
+    });
+    this.descontarStock(itemsSnapshot);
+    const numero = this.state.nextTicket;
+    this.setState({
+      showPago: false,
+      screen: "dashboard",
+      activa: null,
+      histOpen: null,
+      showTicket: true,
+      nextTicket: numero + 1,
+      ticket: { numero, numeroFmt: "N° " + String(numero).padStart(4, "0"), tipo: this.label(n), hora, fecha: d.toLocaleDateString("es-AR"), metodo, totalFmt: money(total), productos: this.ticketProductos(itemsSnapshot) }
+    });
+  }
+
+  cobrarMostrador(metodo) {
+    const mostrador = this.state.mostrador;
+    const total = this.totalFor(mostrador.items, "panaderia");
+    if (total <= 0) { this.setState({ showPago: false }); return; }
+    const unidades = mostrador.items.reduce((a, it) => a + it.qty, 0);
+    const itemsSnapshot = mostrador.items.map(it => {
+      const p = this.prod(it.pid);
+      return { pid: it.pid, qty: it.qty, precioUnit: p ? this.priceFor(p, "panaderia") : 0 };
+    });
+    const d = new Date();
+    const hora = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    const numero = this.state.nextTicket;
+    this.setMostrador(m => {
+      m.historial = m.historial.concat([{ hora, total, metodo, unidades, items: itemsSnapshot, numero }]);
+      m.items = [];
+      return m;
+    });
+    this.descontarStock(itemsSnapshot);
+    this.setState({
+      showPago: false,
+      showTicket: true,
+      nextTicket: numero + 1,
+      ticket: { numero, numeroFmt: "N° " + String(numero).padStart(4, "0"), tipo: "Mostrador", hora, fecha: d.toLocaleDateString("es-AR"), metodo, totalFmt: money(total), productos: this.ticketProductos(itemsSnapshot) }
+    });
+  }
+
+  guardar() {
+    const f = this.state.form;
+    const nombre = f.nombre.trim();
+    const precio = parseFloat(String(f.precio).replace(/[^0-9.]/g, "")) || 0;
+    const stockParsed = parseInt(String(f.stock).replace(/[^0-9]/g, ""), 10);
+    const stock = isNaN(stockParsed) ? 0 : stockParsed;
+    const campoPrecio = f.area === "bar" ? "precioBar" : "precioPanaderia";
+    if (!nombre) return;
+    this.setState(s => {
+      if (f.id) {
+        return { productos: s.productos.map(p => (p.id === f.id ? { ...p, nombre, [campoPrecio]: precio, stock, categoria: f.categoria, combo: f.combo } : p)),
+                 form: { id: null, area: f.area, nombre: "", precio: "", stock: "", categoria: f.categoria, combo: false } };
+      }
+      const nuevo = { id: s.nextId, nombre, stock, categoria: f.categoria, combo: f.combo, precioPanaderia: 0, precioBar: 0 };
+      nuevo[campoPrecio] = precio;
+      return { productos: s.productos.concat([nuevo]),
+               nextId: s.nextId + 1,
+               form: { id: null, area: f.area, nombre: "", precio: "", stock: "", categoria: f.categoria, combo: false } };
+    });
+  }
+
+  registrarMovimiento() {
+    const f = this.state.movForm;
+    const nombre = f.nombre.trim();
+    const monto = parseFloat(String(f.monto).replace(/[^0-9.]/g, "")) || 0;
+    if (!nombre || monto <= 0) return;
+    const d = new Date();
+    const hora = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    this.setState(s => ({
+      movimientos: s.movimientos.concat([{ nombre, tipo: f.tipo, monto, hora }]),
+      movForm: { nombre: "", tipo: f.tipo, monto: "" }
+    }));
+  }
+
+  agregarCategoria(area) {
+    const listKey = area === "bar" ? "categoriasBar" : "categoriasPanaderia";
+    const inputKey = area === "bar" ? "categoriaNuevaBar" : "categoriaNuevaPanaderia";
+    const nombre = this.state[inputKey].trim();
+    if (!nombre) return;
+    this.setState(s => {
+      if (s[listKey].includes(nombre)) return { [inputKey]: "" };
+      return { [listKey]: s[listKey].concat([nombre]), [inputKey]: "" };
+    });
+  }
+
+  borrarCategoria(area, cat) {
+    const listKey = area === "bar" ? "categoriasBar" : "categoriasPanaderia";
+    const filtroKey = area === "bar" ? "filtroBar" : "filtroPanaderia";
+    this.setState(s => {
+      const categorias = s[listKey].filter(c => c !== cat);
+      const fallback = categorias[0] || "";
+      return {
+        [listKey]: categorias,
+        [filtroKey]: s[filtroKey] === cat ? "Todos" : s[filtroKey],
+        form: { ...s.form, categoria: s.form.categoria === cat ? fallback : s.form.categoria }
+      };
+    });
+  }
+
+  chipStyle(active) {
+    return active
+      ? "background:#2E2924; color:#F3EFE6; border:2px solid #2E2924; font-size:15px; font-weight:600; padding:11px 18px; border-radius:999px;"
+      : "background:#FBFAF6; color:#6E6656; border:2px solid #D6CEBB; font-size:15px; font-weight:600; padding:11px 18px; border-radius:999px;";
+  }
+
+  renderVals() {
+    const s = this.state;
+    const mesasVis = s.mesas.slice(0, this.count);
+    const mesas = mesasVis.map(m => {
+      const total = this.totalMesa(m);
+      const ocupada = m.items.length > 0;
+      const unidades = m.items.reduce((a, it) => a + it.qty, 0);
+      return {
+        label: this.label(m.n),
+        ocupada,
+        libre: !ocupada,
+        totalFmt: money(total),
+        itemsLabel: unidades + (unidades === 1 ? " ítem" : " ítems"),
+        libreNota: m.historial.length ? m.historial.length + " pedido(s) hoy" : "Sin movimientos",
+        open: () => this.setState({ screen: "mesa", activa: m.n, histOpen: null })
+      };
+    });
+
+    const cierres = [];
+    const porMetodo = { Efectivo: 0, Transferencia: 0, Débito: 0, Crédito: 0 };
+    mesasVis.forEach(m => m.historial.forEach(h => {
+      porMetodo[h.metodo] = (porMetodo[h.metodo] || 0) + h.total;
+      cierres.push({ hora: h.hora, mesa: this.label(m.n), metodo: h.metodo, totalFmt: money(h.total), detalle: h.unidades + " ítems" });
+    }));
+    s.mostrador.historial.forEach(h => {
+      porMetodo[h.metodo] = (porMetodo[h.metodo] || 0) + h.total;
+      cierres.push({ hora: h.hora, mesa: "Mostrador", metodo: h.metodo, totalFmt: money(h.total), detalle: h.unidades + " ítems" + (h.numero ? " · Ticket #" + h.numero : "") });
+    });
+    cierres.sort((a, b) => (a.hora < b.hora ? 1 : -1));
+    const totalDia = Object.keys(porMetodo).reduce((a, k) => a + porMetodo[k], 0);
+    const maxPago = Math.max(1, ...METODOS.map(k => porMetodo[k]));
+
+    const movimientosOrdenados = s.movimientos.map((m, idx) => ({ m, idx })).reverse();
+    const movimientosNeto = s.movimientos.reduce((a, m) => a + (m.tipo === "ingreso" ? m.monto : -m.monto), 0);
+    const totalCaja = totalDia + movimientosNeto;
+
+    const enMostrador = s.screen === "mostrador";
+    const activa = s.activa ? s.mesas.find(m => m.n === s.activa) : null;
+    const cartArea = enMostrador ? "panaderia" : "bar";
+    const cartItemsRaw = enMostrador ? s.mostrador.items : (activa ? activa.items : []);
+    const cartHistorialRaw = enMostrador ? s.mostrador.historial : (activa ? activa.historial : []);
+
+    const items = cartItemsRaw.map(it => {
+      const p = this.prod(it.pid) || { nombre: "—", precioPanaderia: 0, precioBar: 0 };
+      const unit = this.priceFor(p, cartArea);
+      return {
+        nombre: p.nombre,
+        qty: it.qty,
+        unitLabel: money(unit) + " c/u",
+        subtotalFmt: money(unit * it.qty),
+        inc: () => this.changeQty(it.pid, 1),
+        dec: () => this.changeQty(it.pid, -1)
+      };
+    });
+    const cartTotal = this.totalFor(cartItemsRaw, cartArea);
+    const cartUnidades = cartItemsRaw.reduce((a, it) => a + it.qty, 0);
+    const cartLabel = enMostrador ? "Mostrador" : (activa ? this.label(activa.n) : "");
+    const unidadesMesa = activa ? activa.items.reduce((a, it) => a + it.qty, 0) : 0;
+
+    const historial = cartHistorialRaw.map((h, idx) => ({ h, idx })).reverse().map(({ h, idx }) => {
+      const abierto = s.histOpen === idx;
+      return {
+        hora: h.hora,
+        totalFmt: money(h.total),
+        detalle: h.metodo + " · " + h.unidades + " ítems",
+        abierto,
+        chevron: abierto ? "▲" : "▼",
+        productos: (h.items || []).map(it => {
+          const p = this.prod(it.pid);
+          const unit = typeof it.precioUnit === "number" ? it.precioUnit : (p ? this.priceFor(p, cartArea) : 0);
+          return { label: (p ? p.nombre : "Producto eliminado") + " ×" + it.qty, subtotalFmt: money(unit * it.qty) };
+        }),
+        toggle: () => this.setState({ histOpen: abierto ? null : idx })
+      };
+    });
+
+    const catContext = s.screen === "bar" ? "bar" : (s.screen === "catalogo" ? "panaderia" : cartArea);
+    const categoriasActivas = catContext === "bar" ? s.categoriasBar : s.categoriasPanaderia;
+    const filtroActivo = catContext === "bar" ? s.filtroBar : s.filtroPanaderia;
+    const categoriaNuevaActiva = catContext === "bar" ? s.categoriaNuevaBar : s.categoriaNuevaPanaderia;
+    const filtrados = s.productos.filter(p => filtroActivo === "Todos" || p.categoria === filtroActivo);
+    const ocupadasN = mesasVis.filter(m => m.items.length > 0).length;
+
+    const mostradorVentasHoy = s.mostrador.historial.length;
+    const mostradorTotalHoy = s.mostrador.historial.reduce((a, h) => a + h.total, 0);
+
+    const stockBadge = stock => {
+      if (stock <= 0) return { label: "Sin stock", color: "#7A4438", bg: "#EFE6E1" };
+      if (stock <= 5) return { label: "Quedan " + stock, color: "#8A6A1F", bg: "#F1E6CC" };
+      return { label: stock + " en stock", color: "#5B5347", bg: "#E7E0D0" };
+    };
+
+    return {
+      nombreLocal: this.props.nombreLocal ?? "Chocolate",
+      fechaHoy: new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }),
+      isDashboard: s.screen === "dashboard",
+      isMesa: s.screen === "mesa",
+      isMostrador: enMostrador,
+      isCatalogo: s.screen === "catalogo",
+      isBar: s.screen === "bar",
+      isResumen: s.screen === "resumen",
+      goDashboard: () => this.setState({ screen: "dashboard", activa: null, showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, histOpen: null }),
+      goCatalogo: () => this.setState({ screen: "catalogo", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, form: { id: null, area: "panaderia", nombre: "", precio: "", stock: "", categoria: s.categoriasPanaderia[0] || "", combo: false } }),
+      goBar: () => this.setState({ screen: "bar", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, form: { id: null, area: "bar", nombre: "", precio: "", stock: "", categoria: s.categoriasBar[0] || "", combo: false } }),
+      goResumen: () => this.setState({ screen: "resumen", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false }),
+
+      mesas,
+      mostradorCard: {
+        ventasLabel: mostradorVentasHoy + (mostradorVentasHoy === 1 ? " venta hoy" : " ventas hoy"),
+        totalFmt: money(mostradorTotalHoy),
+        open: () => this.setState({ screen: "mostrador", histOpen: null, showCatalogoModal: false, showPago: false, showConfirmVaciar: false })
+      },
+      ocupadasLabel: ocupadasN + " / " + this.count,
+      pedidosCerrados: cierres.length,
+      totalDiaFmt: money(totalCaja),
+      totalVentasFmt: money(totalDia),
+      hayMovimientos: s.movimientos.length > 0,
+
+      mesaLabel: cartLabel,
+      mesaEstado: unidadesMesa > 0 ? "OCUPADA" : "LIBRE",
+      mesaVacia: cartItemsRaw.length === 0,
+      mesaConItems: cartItemsRaw.length > 0,
+      items,
+      mesaTotalFmt: money(cartTotal),
+      mesaItemsLabel: cartUnidades + (cartUnidades === 1 ? " ítem cargado" : " ítems cargados"),
+      historial,
+      sinHistorial: cartHistorialRaw.length === 0,
+      abrirCatalogo: () => this.setState({ showCatalogoModal: true }),
+      abrirPago: () => this.setState({ showPago: cartTotal > 0 }),
+      abrirConfirmVaciar: () => { if (cartItemsRaw.length > 0) this.setState({ showConfirmVaciar: true }); },
+      confirmarVaciarMesa: () => {
+        if (enMostrador) this.setMostrador(m => { m.items = []; return m; });
+        else if (activa) this.setMesa(activa.n, m => { m.items = []; return m; });
+        this.setState({ showConfirmVaciar: false });
+      },
+      cerrarModales: () => this.setState({ showCatalogoModal: false, showPago: false, showConfirmVaciar: false }),
+      showCatalogoModal: s.showCatalogoModal,
+      showPago: s.showPago,
+      showConfirmVaciar: s.showConfirmVaciar,
+      metodos: METODOS.map(nombre => ({
+        nombre,
+        cobrar: () => (enMostrador ? this.cobrarMostrador(nombre) : this.cobrar(nombre))
+      })),
+
+      showTicket: s.showTicket,
+      ticket: s.ticket || { numero: "", numeroFmt: "", tipo: "", hora: "", fecha: "", metodo: "", totalFmt: money(0), productos: [] },
+      cerrarTicket: () => this.setState({ showTicket: false, ticket: null }),
+      imprimirTicket: () => window.print(),
+
+      categorias: categoriasActivas,
+      chips: ["Todos"].concat(categoriasActivas).map(label => ({
+        label,
+        style: this.chipStyle(filtroActivo === label),
+        onClick: () => this.setState(catContext === "bar" ? { filtroBar: label } : { filtroPanaderia: label })
+      })),
+      categoriasAdmin: categoriasActivas.map(cat => ({
+        nombre: cat,
+        del: () => this.borrarCategoria(catContext, cat)
+      })),
+      categoriaNueva: categoriaNuevaActiva,
+      onCategoriaNueva: e => {
+        const v = e.target.value;
+        this.setState(catContext === "bar" ? { categoriaNuevaBar: v } : { categoriaNuevaPanaderia: v });
+      },
+      agregarCategoria: () => this.agregarCategoria(catContext),
+      productosCatalogo: filtrados.map(p => {
+        const badge = stockBadge(p.stock);
+        return {
+          nombre: p.nombre,
+          categoria: p.categoria,
+          combo: p.combo,
+          precioFmt: money(p.precioPanaderia),
+          stockLabel: badge.label,
+          stockColor: badge.color,
+          stockBg: badge.bg,
+          edit: () => this.setState({ screen: "catalogo", form: { id: p.id, area: "panaderia", nombre: p.nombre, precio: String(p.precioPanaderia), stock: String(p.stock), categoria: p.categoria, combo: p.combo } }),
+          del: () => this.setState(st => ({ productos: st.productos.filter(x => x.id !== p.id) }))
+        };
+      }),
+      productosBar: filtrados.map(p => {
+        const badge = stockBadge(p.stock);
+        return {
+          nombre: p.nombre,
+          categoria: p.categoria,
+          combo: p.combo,
+          precioFmt: money(p.precioBar),
+          stockLabel: badge.label,
+          stockColor: badge.color,
+          stockBg: badge.bg,
+          edit: () => this.setState({ screen: "bar", form: { id: p.id, area: "bar", nombre: p.nombre, precio: String(p.precioBar), stock: String(p.stock), categoria: p.categoria, combo: p.combo } }),
+          del: () => this.setState(st => ({ productos: st.productos.filter(x => x.id !== p.id) }))
+        };
+      }),
+      productosPicker: filtrados.map(p => {
+        const unit = this.priceFor(p, cartArea);
+        const sinStock = p.stock <= 0;
+        return {
+          nombre: p.nombre,
+          combo: p.combo,
+          precioFmt: money(unit),
+          stockNote: sinStock ? "Sin stock" : (p.stock <= 5 ? "Quedan " + p.stock : ""),
+          pickerStyle: sinStock
+            ? "text-align:left; background:#EFEAE0; border:2px dashed #D6CEBB; border-radius:14px; padding:16px; min-height:112px; display:flex; flex-direction:column; opacity:0.55; cursor:not-allowed;"
+            : "text-align:left; background:#FBFAF6; border:2px solid #DED5C2; border-radius:14px; padding:16px; min-height:112px; display:flex; flex-direction:column;",
+          add: () => { if (!sinStock) this.addProd(p.id); }
+        };
+      }),
+      formTitulo: s.form.id ? "Editar producto" : "Nuevo producto o combo",
+      formNombre: s.form.nombre,
+      formPrecio: s.form.precio,
+      formStock: s.form.stock,
+      formCategoria: s.form.categoria,
+      comboCheck: s.form.combo ? "✓" : "",
+      onNombre: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, nombre: v } })); },
+      onPrecio: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, precio: v } })); },
+      onStock: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, stock: v } })); },
+      onCategoria: e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, categoria: v } })); },
+      toggleCombo: () => this.setState(st => ({ form: { ...st.form, combo: !st.form.combo } })),
+      guardarProducto: () => this.guardar(),
+      limpiarForm: () => this.setState(st => ({ form: { id: null, area: st.form.area, nombre: "", precio: "", stock: "", categoria: st.form.categoria, combo: false } })),
+
+      pagos: METODOS.map(nombre => {
+        const v = porMetodo[nombre] || 0;
+        const n = cierres.filter(c => c.metodo === nombre).length;
+        return {
+          nombre,
+          totalFmt: money(v),
+          detalle: n + (n === 1 ? " pedido" : " pedidos") + (totalDia ? " · " + Math.round((v / totalDia) * 100) + "%" : ""),
+          barStyle: "height:100%; border-radius:999px; background:#6B5A3F; width:" + Math.round((v / maxPago) * 100) + "%;"
+        };
+      }),
+      mesasAtendidas: mesasVis.filter(m => m.historial.length > 0).length,
+      ticketPromedio: cierres.length ? money(totalDia / cierres.length) : money(0),
+      cierres,
+      sinCierres: cierres.length === 0,
+
+      movFormNombre: s.movForm.nombre,
+      movFormMonto: s.movForm.monto,
+      onMovNombre: e => { const v = e.target.value; this.setState(st => ({ movForm: { ...st.movForm, nombre: v } })); },
+      onMovMonto: e => { const v = e.target.value; this.setState(st => ({ movForm: { ...st.movForm, monto: v } })); },
+      movTipoIngresoStyle: this.chipStyle(s.movForm.tipo === "ingreso"),
+      movTipoRetiroStyle: this.chipStyle(s.movForm.tipo === "retiro"),
+      elegirIngreso: () => this.setState(st => ({ movForm: { ...st.movForm, tipo: "ingreso" } })),
+      elegirRetiro: () => this.setState(st => ({ movForm: { ...st.movForm, tipo: "retiro" } })),
+      registrarMovimiento: () => this.registrarMovimiento(),
+      movimientosNetoFmt: (movimientosNeto >= 0 ? "+ " : "− ") + money(Math.abs(movimientosNeto)),
+      sinMovimientos: s.movimientos.length === 0,
+      movimientos: movimientosOrdenados.map(({ m }) => ({
+        hora: m.hora,
+        nombre: m.nombre,
+        esIngreso: m.tipo === "ingreso",
+        esRetiro: m.tipo === "retiro",
+        tipoLabel: m.tipo === "ingreso" ? "INGRESO" : "RETIRO",
+        montoFmt: (m.tipo === "ingreso" ? "+ " : "− ") + money(m.monto)
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

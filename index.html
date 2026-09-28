@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chocolate | Panaderia-Cafe</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -728,6 +729,20 @@ const CATS_BAR = ["Cafetería", "Bebidas frías", "Sándwiches", "Combos"];
 const SEED = [];
 const METODOS = ["Efectivo", "Transferencia", "Débito", "Crédito"];
 
+// Reemplazar con la URL y la anon key del proyecto de Supabase (Project Settings → API).
+const SUPABASE_URL = "https://tfrkpbdqdmfbcaemsanr.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Jjm28aHc3PQMG0G37Ji8VA_gDN-m23c";
+const PERSIST_ROW_ID = "default";
+const PERSIST_KEYS = ["mesas", "mostrador", "productos", "nextId", "nextTicket", "categoriasPanaderia", "categoriasBar", "movimientos"];
+
+const supabaseClient = (SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR-PROJECT") && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+if (!supabaseClient) {
+  console.warn("[persist] Supabase no está configurado todavía: los datos no se van a guardar entre sesiones. Completá SUPABASE_URL y SUPABASE_ANON_KEY.");
+}
+
 function money(n) {
   return "$ " + Math.round(n).toLocaleString("es-AR");
 }
@@ -757,6 +772,56 @@ class Component extends DCLogic {
     movimientos: [],
     movForm: { nombre: "", tipo: "ingreso", monto: "" }
   };
+
+  __loaded = false;
+  __persistTimer = null;
+
+  componentDidMount() {
+    if (!supabaseClient) { this.__loaded = true; return; }
+    supabaseClient
+      .from("app_state")
+      .select("data")
+      .eq("id", PERSIST_ROW_ID)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) console.error("[persist] error al cargar:", error);
+        if (data && data.data) {
+          const saved = data.data;
+          const patch = {};
+          for (const k of PERSIST_KEYS) if (saved[k] !== undefined) patch[k] = saved[k];
+          this.setState(patch);
+        }
+        this.__loaded = true;
+      })
+      .catch(err => {
+        console.error("[persist] error al cargar:", err);
+        this.__loaded = true;
+      });
+  }
+
+  // Sobrescribe el setState del runtime para autoguardar en Supabase después de cada cambio.
+  setState(update, cb) {
+    super.setState(update, () => {
+      this.schedulePersist();
+      if (cb) cb();
+    });
+  }
+
+  schedulePersist() {
+    if (!this.__loaded || !supabaseClient) return;
+    clearTimeout(this.__persistTimer);
+    this.__persistTimer = setTimeout(() => this.persistNow(), 800);
+  }
+
+  persistNow() {
+    if (!supabaseClient) return;
+    const snapshot = {};
+    for (const k of PERSIST_KEYS) snapshot[k] = this.state[k];
+    supabaseClient
+      .from("app_state")
+      .upsert({ id: PERSIST_ROW_ID, data: snapshot, updated_at: new Date().toISOString() })
+      .then(({ error }) => { if (error) console.error("[persist] error al guardar:", error); });
+  }
 
   get count() { return Math.max(1, Math.min(24, this.props.cantidadMesas ?? 14)); }
   prod(id) { return this.state.productos.find(p => p.id === id); }

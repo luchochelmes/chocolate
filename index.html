@@ -777,6 +777,9 @@ class Component extends DCLogic {
   __persistTimer = null;
 
   componentDidMount() {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") this.persistNow();
+    });
     if (!supabaseClient) { this.__loaded = true; return; }
     supabaseClient
       .from("app_state")
@@ -814,7 +817,7 @@ class Component extends DCLogic {
   }
 
   persistNow() {
-    if (!supabaseClient) return;
+    if (!supabaseClient || !this.__loaded) return;
     const snapshot = {};
     for (const k of PERSIST_KEYS) snapshot[k] = this.state[k];
     supabaseClient
@@ -1227,15 +1230,17 @@ class Component extends DCLogic {
       productosPicker: filtrados.map(p => {
         const unit = this.priceFor(p, cartArea);
         const sinStock = p.stock <= 0;
+        const sinPrecio = unit <= 0;
+        const noDisponible = sinStock || sinPrecio;
         return {
           nombre: p.nombre,
           combo: p.combo,
           precioFmt: money(unit),
-          stockNote: sinStock ? "Sin stock" : (p.stock <= 5 ? "Quedan " + p.stock : ""),
-          pickerStyle: sinStock
+          stockNote: sinStock ? "Sin stock" : (sinPrecio ? "Sin precio cargado en esta área" : (p.stock <= 5 ? "Quedan " + p.stock : "")),
+          pickerStyle: noDisponible
             ? "text-align:left; background:#EFEAE0; border:2px dashed #D6CEBB; border-radius:14px; padding:16px; min-height:112px; display:flex; flex-direction:column; opacity:0.55; cursor:not-allowed;"
             : "text-align:left; background:#FBFAF6; border:2px solid #DED5C2; border-radius:14px; padding:16px; min-height:112px; display:flex; flex-direction:column;",
-          add: () => { if (!sinStock) this.addProd(p.id); }
+          add: () => { if (!noDisponible) this.addProd(p.id); }
         };
       }),
       formTitulo: s.form.id ? "Editar producto" : "Nuevo producto o combo",

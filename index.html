@@ -82,11 +82,17 @@
       <button onClick="{{ goCatalogo }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Catálogo
         <sc-if value="{{ isCatalogo }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
       </button>
+      <button onClick="{{ goPorPeso }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Kg
+        <sc-if value="{{ isPorPeso }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
+      </button>
       <button onClick="{{ goBar }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Bar
         <sc-if value="{{ isBar }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
       </button>
       <button onClick="{{ goResumen }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Resumen del día
         <sc-if value="{{ isResumen }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
+      </button>
+      <button onClick="{{ goPagos }}" style="position:relative; background:transparent; border:0; color:#F3EFE6; font-size:16px; font-weight:600; padding:10px 16px 12px; border-radius:10px;" style-hover="background:rgba(237,231,216,0.12)">Pagos
+        <sc-if value="{{ isPagos }}"><span style="position:absolute; left:16px; right:16px; bottom:4px; height:3px; border-radius:2px; background:#9C7A3E;"></span></sc-if>
       </button>
     </nav>
 
@@ -607,6 +613,127 @@
   </main>
   </sc-if>
 
+  <sc-if value="{{ isPagos }}">
+  <main class="app-main" style="padding:26px 22px 60px; max-width:1200px; margin:0 auto;">
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0 0 4px;">Pagos e ingresos del local</h2>
+    <p style="margin:0 0 22px; color:#87806F; font-size:15px;">Proveedores, sueldos, alquiler y otros movimientos del negocio. No afecta la Caja del día (que es solo ventas).</p>
+
+    <div style="background:#2E2924; color:#F3EFE6; border-radius:20px; padding:24px 26px; display:flex; gap:30px; flex-wrap:wrap; align-items:flex-end; margin-bottom:20px;">
+      <div>
+        <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65; margin-bottom:6px;">Balance de pagos e ingresos</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(36px,6vw,56px); line-height:1; color:#9C7A3E;">{{ pagosBalanceFmt }}</div>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:30px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.65;">Ingresos</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:28px;">{{ pagosIngresosFmt }}</div>
+        </div>
+        <div>
+          <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.65;">Pagos</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:28px;">{{ pagosPagosFmt }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); gap:20px; align-items:start;">
+      <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:20px 22px;">
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Concepto</label>
+        <input value="{{ pagoFormNombre }}" onChange="{{ onPagoNombre }}" placeholder="Ej. Pago proveedor harina" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; margin-bottom:14px; color:#262119;" />
+
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Tipo</label>
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <button onClick="{{ elegirPagoIngreso }}" style="{{ pagoTipoIngresoStyle }}">Ingreso</button>
+          <button onClick="{{ elegirPagoPago }}" style="{{ pagoTipoPagoStyle }}">Pago</button>
+        </div>
+
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Monto</label>
+        <input value="{{ pagoFormMonto }}" onChange="{{ onPagoMonto }}" inputMode="numeric" placeholder="0" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119; margin-bottom:16px;" />
+
+        <button onClick="{{ registrarPago }}" style="width:100%; background:#6B5A3F; color:#F2ECE0; border:0; font-size:17px; font-weight:700; padding:16px; border-radius:12px;" style-hover="background:#574A34">Registrar</button>
+      </section>
+
+      <section style="grid-column:span 2; min-width:0; background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:2px solid #E9E2D2; font-family:'Bricolage Grotesque',sans-serif; font-size:17px; font-weight:700;">Historial</div>
+        <sc-if value="{{ sinPagos }}">
+          <div style="padding:28px 20px; color:#8F8776; font-size:15px;">Todavía no se registraron pagos ni ingresos.</div>
+        </sc-if>
+        <sc-for list="{{ pagosList }}" as="pg" hint-placeholder-count="3">
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid #E7E0D0; flex-wrap:wrap;">
+            <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:15px; width:52px;">{{ pg.hora }}</span>
+            <span style="flex:1; min-width:100px; font-size:14px; color:#655D4E;">{{ pg.nombre }}</span>
+            <sc-if value="{{ pg.esIngreso }}"><span style="font-size:11px; font-weight:700; letter-spacing:0.06em; background:#D9DCC8; color:#4E5540; padding:4px 9px; border-radius:999px;">{{ pg.tipoLabel }}</span></sc-if>
+            <sc-if value="{{ pg.esPago }}"><span style="font-size:11px; font-weight:700; letter-spacing:0.06em; background:#EFE6E1; color:#7A4438; padding:4px 9px; border-radius:999px;">{{ pg.tipoLabel }}</span></sc-if>
+            <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:16px; min-width:90px; text-align:right;">{{ pg.montoFmt }}</span>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isPorPeso }}">
+  <main class="app-main" style="padding:26px 22px 60px; max-width:1200px; margin:0 auto;">
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0 0 4px;">Precio por kilo</h2>
+    <p style="margin:0 0 22px; color:#87806F; font-size:15px;">Cargá el precio por kilo de un producto y calculá al instante el precio según los gramos que necesites.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); gap:20px; align-items:start;">
+      <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:20px 22px;">
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:19px; margin:0 0 16px;">{{ formPesoTitulo }}</h3>
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Nombre del producto</label>
+        <input value="{{ formPesoNombre }}" onChange="{{ onPesoNombre }}" placeholder="Ej. Criollitos" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; margin-bottom:14px; color:#262119;" />
+
+        <label style="display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#87806F; margin-bottom:6px;">Precio por kilo</label>
+        <input value="{{ formPesoPrecio }}" onChange="{{ onPesoPrecio }}" inputMode="numeric" placeholder="0" style="width:100%; font-size:17px; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119; margin-bottom:16px;" />
+
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ guardarProductoPeso }}" style="flex:1; background:#6B5A3F; color:#F2ECE0; border:0; font-size:17px; font-weight:700; padding:16px; border-radius:12px;" style-hover="background:#574A34">Guardar</button>
+          <button onClick="{{ limpiarFormPeso }}" style="background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:16px 18px; border-radius:12px;" style-hover="background:#E9E2D2">Limpiar</button>
+        </div>
+      </section>
+
+      <section style="grid-column:span 2; min-width:0; display:flex; flex-direction:column; gap:20px;">
+        <div style="background:#2E2924; color:#F3EFE6; border-radius:18px; padding:22px 24px;">
+          <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65; margin-bottom:10px;">Calculadora</div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+            <div style="flex:2; min-width:200px;">
+              <label style="display:block; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; opacity:0.7; margin-bottom:6px;">Producto</label>
+              <select value="{{ calcPesoProductoId }}" onChange="{{ onCalcPesoProducto }}" style="width:100%; font-size:17px; padding:14px; border:2px solid rgba(243,239,230,0.3); border-radius:12px; background:#3A342D; color:#F3EFE6;">
+                <option value="">Elegí un producto</option>
+                <sc-for list="{{ productosPeso }}" as="pp" hint-placeholder-count="3">
+                  <option value="{{ pp.id }}">{{ pp.nombre }} — {{ pp.precioKiloFmt }}/kg</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="flex:1; min-width:140px;">
+              <label style="display:block; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; opacity:0.7; margin-bottom:6px;">Gramos</label>
+              <input value="{{ calcGramos }}" onChange="{{ onCalcGramos }}" inputMode="numeric" placeholder="300" style="width:100%; font-size:17px; padding:14px; border:2px solid rgba(243,239,230,0.3); border-radius:12px; background:#3A342D; color:#F3EFE6;" />
+            </div>
+          </div>
+          <div style="font-size:15px; opacity:0.8;">{{ calcResultLabel }}</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(32px,5vw,48px); line-height:1.2; color:#9C7A3E;">{{ calcResultFmt }}</div>
+        </div>
+
+        <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:2px solid #E9E2D2; font-family:'Bricolage Grotesque',sans-serif; font-size:17px; font-weight:700;">Productos por kilo cargados</div>
+          <sc-if value="{{ sinProductosPeso }}">
+            <div style="padding:28px 20px; color:#8F8776; font-size:15px;">Todavía no cargaste ningún producto por kilo.</div>
+          </sc-if>
+          <sc-for list="{{ productosPesoList }}" as="pp" hint-placeholder-count="3">
+            <div class="cat-row" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; padding:13px 18px; border-bottom:1px solid #E7E0D0;">
+              <div style="flex:1; min-width:140px; font-size:17px; font-weight:600;">{{ pp.nombre }}</div>
+              <div class="cat-price" style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:19px; width:140px; text-align:right;">{{ pp.precioKiloFmt }}/kg</div>
+              <div style="display:flex; gap:8px;">
+                <button onClick="{{ pp.edit }}" style="background:#FCFBF8; border:2px solid #D6CEBB; color:#6E6656; font-size:15px; font-weight:600; padding:11px 16px; border-radius:10px;" style-hover="background:#E9E2D2">Editar</button>
+                <button onClick="{{ pp.del }}" style="background:#FCFBF8; border:2px solid #D7C7BE; color:#7A4438; font-size:15px; font-weight:600; padding:11px 14px; border-radius:10px;" style-hover="background:#EFE6E1">Borrar</button>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </section>
+    </div>
+  </main>
+  </sc-if>
+
   <sc-if value="{{ showCatalogoModal }}">
     <div style="position:fixed; inset:0; z-index:50; background:rgba(38,33,25,0.55); display:flex; align-items:center; justify-content:center; padding:24px;">
       <div style="background:#F3EFE6; width:100%; max-width:1000px; height:min(720px,88vh); border-radius:22px; display:flex; flex-direction:column; overflow:hidden;">
@@ -733,7 +860,7 @@ const METODOS = ["Efectivo", "Transferencia", "Débito", "Crédito"];
 const SUPABASE_URL = "https://tfrkpbdqdmfbcaemsanr.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Jjm28aHc3PQMG0G37Ji8VA_gDN-m23c";
 const PERSIST_ROW_ID = "default";
-const PERSIST_KEYS = ["mesas", "mostrador", "productos", "nextId", "nextTicket", "categoriasPanaderia", "categoriasBar", "movimientos"];
+const PERSIST_KEYS = ["mesas", "mostrador", "productos", "nextId", "nextTicket", "categoriasPanaderia", "categoriasBar", "movimientos", "pagosList", "productosPeso", "nextPesoId"];
 
 const supabaseClient = (SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR-PROJECT") && window.supabase)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -770,7 +897,14 @@ class Component extends DCLogic {
     histOpen: null,
     form: { id: null, area: "panaderia", nombre: "", precio: "", stock: "", categoria: "Panadería", combo: false },
     movimientos: [],
-    movForm: { nombre: "", tipo: "ingreso", monto: "" }
+    movForm: { nombre: "", tipo: "ingreso", monto: "" },
+    pagosList: [],
+    pagoForm: { nombre: "", tipo: "ingreso", monto: "" },
+    productosPeso: [],
+    nextPesoId: 1,
+    formPeso: { id: null, nombre: "", precioKilo: "" },
+    calcPesoProductoId: "",
+    calcGramos: ""
   };
 
   __loaded = false;
@@ -1003,6 +1137,39 @@ class Component extends DCLogic {
     }));
   }
 
+  registrarPago() {
+    const f = this.state.pagoForm;
+    const nombre = f.nombre.trim();
+    const monto = parseFloat(String(f.monto).replace(/[^0-9.]/g, "")) || 0;
+    if (!nombre || monto <= 0) return;
+    const d = new Date();
+    const hora = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    this.setState(s => ({
+      pagosList: s.pagosList.concat([{ nombre, tipo: f.tipo, monto, hora }]),
+      pagoForm: { nombre: "", tipo: f.tipo, monto: "" }
+    }));
+  }
+
+  guardarProductoPeso() {
+    const f = this.state.formPeso;
+    const nombre = f.nombre.trim();
+    const precioKilo = parseFloat(String(f.precioKilo).replace(/[^0-9.]/g, "")) || 0;
+    if (!nombre || precioKilo <= 0) return;
+    this.setState(s => {
+      if (f.id) {
+        return {
+          productosPeso: s.productosPeso.map(p => (p.id === f.id ? { ...p, nombre, precioKilo } : p)),
+          formPeso: { id: null, nombre: "", precioKilo: "" }
+        };
+      }
+      return {
+        productosPeso: s.productosPeso.concat([{ id: s.nextPesoId, nombre, precioKilo }]),
+        nextPesoId: s.nextPesoId + 1,
+        formPeso: { id: null, nombre: "", precioKilo: "" }
+      };
+    });
+  }
+
   agregarCategoria(area) {
     const listKey = area === "bar" ? "categoriasBar" : "categoriasPanaderia";
     const inputKey = area === "bar" ? "categoriaNuevaBar" : "categoriaNuevaPanaderia";
@@ -1070,6 +1237,15 @@ class Component extends DCLogic {
     const movimientosNeto = s.movimientos.reduce((a, m) => a + (m.tipo === "ingreso" ? m.monto : -m.monto), 0);
     const totalCaja = totalDia + movimientosNeto;
 
+    const pagosOrdenados = s.pagosList.map((pg, idx) => ({ pg, idx })).reverse();
+    const pagosIngresos = s.pagosList.reduce((a, pg) => a + (pg.tipo === "ingreso" ? pg.monto : 0), 0);
+    const pagosPagos = s.pagosList.reduce((a, pg) => a + (pg.tipo === "pago" ? pg.monto : 0), 0);
+    const pagosBalance = pagosIngresos - pagosPagos;
+
+    const calcProducto = s.productosPeso.find(p => String(p.id) === String(s.calcPesoProductoId)) || null;
+    const calcGramosN = parseFloat(String(s.calcGramos).replace(/[^0-9.]/g, "")) || 0;
+    const calcPrecio = calcProducto ? (calcProducto.precioKilo * calcGramosN) / 1000 : 0;
+
     const enMostrador = s.screen === "mostrador";
     const activa = s.activa ? s.mesas.find(m => m.n === s.activa) : null;
     const cartArea = enMostrador ? "panaderia" : "bar";
@@ -1135,10 +1311,14 @@ class Component extends DCLogic {
       isCatalogo: s.screen === "catalogo",
       isBar: s.screen === "bar",
       isResumen: s.screen === "resumen",
+      isPagos: s.screen === "pagos",
+      isPorPeso: s.screen === "porpeso",
       goDashboard: () => this.setState({ screen: "dashboard", activa: null, showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, histOpen: null }),
       goCatalogo: () => this.setState({ screen: "catalogo", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, form: { id: null, area: "panaderia", nombre: "", precio: "", stock: "", categoria: s.categoriasPanaderia[0] || "", combo: false } }),
       goBar: () => this.setState({ screen: "bar", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, form: { id: null, area: "bar", nombre: "", precio: "", stock: "", categoria: s.categoriasBar[0] || "", combo: false } }),
       goResumen: () => this.setState({ screen: "resumen", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false }),
+      goPagos: () => this.setState({ screen: "pagos", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false }),
+      goPorPeso: () => this.setState({ screen: "porpeso", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false }),
 
       mesas,
       mostradorCard: {
@@ -1290,7 +1470,54 @@ class Component extends DCLogic {
         esRetiro: m.tipo === "retiro",
         tipoLabel: m.tipo === "ingreso" ? "INGRESO" : "RETIRO",
         montoFmt: (m.tipo === "ingreso" ? "+ " : "− ") + money(m.monto)
-      }))
+      })),
+
+      pagosBalanceFmt: money(pagosBalance),
+      pagosIngresosFmt: money(pagosIngresos),
+      pagosPagosFmt: money(pagosPagos),
+      pagoFormNombre: s.pagoForm.nombre,
+      pagoFormMonto: s.pagoForm.monto,
+      onPagoNombre: e => { const v = e.target.value; this.setState(st => ({ pagoForm: { ...st.pagoForm, nombre: v } })); },
+      onPagoMonto: e => { const v = e.target.value; this.setState(st => ({ pagoForm: { ...st.pagoForm, monto: v } })); },
+      pagoTipoIngresoStyle: this.chipStyle(s.pagoForm.tipo === "ingreso"),
+      pagoTipoPagoStyle: this.chipStyle(s.pagoForm.tipo === "pago"),
+      elegirPagoIngreso: () => this.setState(st => ({ pagoForm: { ...st.pagoForm, tipo: "ingreso" } })),
+      elegirPagoPago: () => this.setState(st => ({ pagoForm: { ...st.pagoForm, tipo: "pago" } })),
+      registrarPago: () => this.registrarPago(),
+      sinPagos: s.pagosList.length === 0,
+      pagosList: pagosOrdenados.map(({ pg }) => ({
+        hora: pg.hora,
+        nombre: pg.nombre,
+        esIngreso: pg.tipo === "ingreso",
+        esPago: pg.tipo === "pago",
+        tipoLabel: pg.tipo === "ingreso" ? "INGRESO" : "PAGO",
+        montoFmt: (pg.tipo === "ingreso" ? "+ " : "− ") + money(pg.monto)
+      })),
+
+      formPesoTitulo: s.formPeso.id ? "Editar producto por kilo" : "Nuevo producto por kilo",
+      formPesoNombre: s.formPeso.nombre,
+      formPesoPrecio: s.formPeso.precioKilo,
+      onPesoNombre: e => { const v = e.target.value; this.setState(st => ({ formPeso: { ...st.formPeso, nombre: v } })); },
+      onPesoPrecio: e => { const v = e.target.value; this.setState(st => ({ formPeso: { ...st.formPeso, precioKilo: v } })); },
+      guardarProductoPeso: () => this.guardarProductoPeso(),
+      limpiarFormPeso: () => this.setState({ formPeso: { id: null, nombre: "", precioKilo: "" } }),
+      productosPeso: s.productosPeso.map(p => ({ id: p.id, nombre: p.nombre, precioKiloFmt: money(p.precioKilo) })),
+      sinProductosPeso: s.productosPeso.length === 0,
+      productosPesoList: s.productosPeso.map(p => ({
+        nombre: p.nombre,
+        precioKiloFmt: money(p.precioKilo),
+        edit: () => this.setState({ formPeso: { id: p.id, nombre: p.nombre, precioKilo: String(p.precioKilo) } }),
+        del: () => this.setState(st => ({
+          productosPeso: st.productosPeso.filter(x => x.id !== p.id),
+          calcPesoProductoId: st.calcPesoProductoId === p.id ? "" : st.calcPesoProductoId
+        }))
+      })),
+      calcPesoProductoId: s.calcPesoProductoId,
+      onCalcPesoProducto: e => { const v = e.target.value; this.setState({ calcPesoProductoId: v }); },
+      calcGramos: s.calcGramos,
+      onCalcGramos: e => { const v = e.target.value; this.setState({ calcGramos: v }); },
+      calcResultLabel: calcProducto ? (calcGramosN || 0) + "gr de " + calcProducto.nombre : "Elegí un producto y cargá los gramos",
+      calcResultFmt: money(calcPrecio)
     };
   }
 }

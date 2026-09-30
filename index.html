@@ -710,7 +710,19 @@
             </div>
           </div>
           <div style="font-size:15px; opacity:0.8;">{{ calcResultLabel }}</div>
-          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(32px,5vw,48px); line-height:1.2; color:#9C7A3E;">{{ calcResultFmt }}</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(32px,5vw,48px); line-height:1.2; color:#9C7A3E; margin-bottom:16px;">{{ calcResultFmt }}</div>
+
+          <label style="display:block; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; opacity:0.7; margin-bottom:6px;">Agregar a</label>
+          <select value="{{ calcDestino }}" onChange="{{ onCalcDestino }}" style="width:100%; font-size:17px; padding:14px; border:2px solid rgba(243,239,230,0.3); border-radius:12px; background:#3A342D; color:#F3EFE6; margin-bottom:16px;">
+            <sc-for list="{{ destinoOptions }}" as="d" hint-placeholder-count="4">
+              <option value="{{ d.id }}">{{ d.label }}</option>
+            </sc-for>
+          </select>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button onClick="{{ agregarPesoACarrito }}" style="{{ agregarPesoStyle }}">Agregar</button>
+            <button onClick="{{ cobrarPesoAhora }}" style="{{ cobrarPesoStyle }}">Cobrar ahora</button>
+          </div>
         </div>
 
         <section style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; overflow:hidden;">
@@ -904,7 +916,8 @@ class Component extends DCLogic {
     nextPesoId: 1,
     formPeso: { id: null, nombre: "", precioKilo: "" },
     calcPesoProductoId: "",
-    calcGramos: ""
+    calcGramos: "",
+    calcDestino: "mostrador"
   };
 
   __loaded = false;
@@ -962,10 +975,13 @@ class Component extends DCLogic {
 
   get count() { return Math.max(1, Math.min(24, this.props.cantidadMesas ?? 14)); }
   prod(id) { return this.state.productos.find(p => p.id === id); }
+  prodPeso(id) { return this.state.productosPeso.find(p => p.id === id); }
+  unitPeso(it) { const pp = this.prodPeso(it.pesoId); return pp ? (pp.precioKilo * it.gramos) / 1000 : 0; }
   label(n) { return "Mesa " + String(n).padStart(2, "0"); }
   priceFor(p, area) { return area === "panaderia" ? p.precioPanaderia : p.precioBar; }
   totalFor(items, area) {
     return items.reduce((acc, it) => {
+      if (it.pesoId != null) return acc + this.unitPeso(it) * it.qty;
       const p = this.prod(it.pid);
       return acc + (p ? this.priceFor(p, area) * it.qty : 0);
     }, 0);
@@ -1035,16 +1051,54 @@ class Component extends DCLogic {
     });
   }
 
+  changeQtyItem(uid, d) {
+    const apply = m => {
+      const i = m.items.findIndex(it => it.uid === uid);
+      if (i < 0) return m;
+      const q = m.items[i].qty + d;
+      if (q <= 0) m.items.splice(i, 1);
+      else m.items[i] = { ...m.items[i], qty: q };
+      return m;
+    };
+    if (this.enMostrador()) { this.setMostrador(apply); return; }
+    this.setMesa(this.state.activa, apply);
+  }
+
+  agregarPesoACarrito(destino, pesoId, gramos) {
+    const item = { pesoId, gramos, qty: 1, uid: "peso_" + Date.now() + "_" + Math.random().toString(36).slice(2) };
+    if (destino === "mostrador") this.setMostrador(m => { m.items = m.items.concat([item]); return m; });
+    else {
+      const n = parseInt(destino, 10);
+      if (n) this.setMesa(n, m => { m.items = m.items.concat([item]); return m; });
+    }
+    this.setState({ calcGramos: "" });
+  }
+
+  cobrarPesoAhora(pesoId, gramos) {
+    const item = { pesoId, gramos, qty: 1, uid: "peso_" + Date.now() + "_" + Math.random().toString(36).slice(2) };
+    this.setMostrador(m => { m.items = m.items.concat([item]); return m; });
+    this.setState({ screen: "mostrador", showPago: true, histOpen: null, calcGramos: "" });
+  }
+
   ticketProductos(itemsSnapshot) {
     return itemsSnapshot.map(it => {
-      const p = this.prod(it.pid) || { nombre: "Producto eliminado" };
+      const nombre = it.label || (this.prod(it.pid) || { nombre: "Producto eliminado" }).nombre;
       return {
-        nombre: p.nombre,
+        nombre,
         qty: it.qty,
         unitFmt: money(it.precioUnit),
         subtotalFmt: money(it.precioUnit * it.qty)
       };
     });
+  }
+
+  snapshotItem(it, area) {
+    if (it.pesoId != null) {
+      const pp = this.prodPeso(it.pesoId);
+      return { pesoId: it.pesoId, gramos: it.gramos, qty: it.qty, precioUnit: this.unitPeso(it), label: (pp ? pp.nombre : "Producto eliminado") + " (" + it.gramos + "gr)" };
+    }
+    const p = this.prod(it.pid);
+    return { pid: it.pid, qty: it.qty, precioUnit: p ? this.priceFor(p, area) : 0 };
   }
 
   cobrar(metodo) {
@@ -1053,10 +1107,7 @@ class Component extends DCLogic {
     const total = this.totalFor(mesa.items, "bar");
     if (total <= 0) { this.setState({ showPago: false }); return; }
     const unidades = mesa.items.reduce((a, it) => a + it.qty, 0);
-    const itemsSnapshot = mesa.items.map(it => {
-      const p = this.prod(it.pid);
-      return { pid: it.pid, qty: it.qty, precioUnit: p ? this.priceFor(p, "bar") : 0 };
-    });
+    const itemsSnapshot = mesa.items.map(it => this.snapshotItem(it, "bar"));
     const d = new Date();
     const hora = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
     this.setMesa(n, m => {
@@ -1082,10 +1133,7 @@ class Component extends DCLogic {
     const total = this.totalFor(mostrador.items, "panaderia");
     if (total <= 0) { this.setState({ showPago: false }); return; }
     const unidades = mostrador.items.reduce((a, it) => a + it.qty, 0);
-    const itemsSnapshot = mostrador.items.map(it => {
-      const p = this.prod(it.pid);
-      return { pid: it.pid, qty: it.qty, precioUnit: p ? this.priceFor(p, "panaderia") : 0 };
-    });
+    const itemsSnapshot = mostrador.items.map(it => this.snapshotItem(it, "panaderia"));
     const d = new Date();
     const hora = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
     const numero = this.state.nextTicket;
@@ -1245,6 +1293,10 @@ class Component extends DCLogic {
     const calcProducto = s.productosPeso.find(p => String(p.id) === String(s.calcPesoProductoId)) || null;
     const calcGramosN = parseFloat(String(s.calcGramos).replace(/[^0-9.]/g, "")) || 0;
     const calcPrecio = calcProducto ? (calcProducto.precioKilo * calcGramosN) / 1000 : 0;
+    const calcListo = !!calcProducto && calcGramosN > 0;
+    const destinoOptions = [{ id: "mostrador", label: "Mostrador" }].concat(
+      mesasVis.map(m => ({ id: String(m.n), label: this.label(m.n) + (m.items.length > 0 ? " (ocupada)" : " (libre)") }))
+    );
 
     const enMostrador = s.screen === "mostrador";
     const activa = s.activa ? s.mesas.find(m => m.n === s.activa) : null;
@@ -1253,6 +1305,18 @@ class Component extends DCLogic {
     const cartHistorialRaw = enMostrador ? s.mostrador.historial : (activa ? activa.historial : []);
 
     const items = cartItemsRaw.map(it => {
+      if (it.pesoId != null) {
+        const pp = this.prodPeso(it.pesoId);
+        const unit = this.unitPeso(it);
+        return {
+          nombre: (pp ? pp.nombre : "Producto eliminado") + " (" + it.gramos + "gr)",
+          qty: it.qty,
+          unitLabel: money(unit) + " c/u",
+          subtotalFmt: money(unit * it.qty),
+          inc: () => this.changeQtyItem(it.uid, 1),
+          dec: () => this.changeQtyItem(it.uid, -1)
+        };
+      }
       const p = this.prod(it.pid) || { nombre: "—", precioPanaderia: 0, precioBar: 0 };
       const unit = this.priceFor(p, cartArea);
       return {
@@ -1278,6 +1342,10 @@ class Component extends DCLogic {
         abierto,
         chevron: abierto ? "▲" : "▼",
         productos: (h.items || []).map(it => {
+          if (it.label) {
+            const unitPeso = typeof it.precioUnit === "number" ? it.precioUnit : 0;
+            return { label: it.label + " ×" + it.qty, subtotalFmt: money(unitPeso * it.qty) };
+          }
           const p = this.prod(it.pid);
           const unit = typeof it.precioUnit === "number" ? it.precioUnit : (p ? this.priceFor(p, cartArea) : 0);
           return { label: (p ? p.nombre : "Producto eliminado") + " ×" + it.qty, subtotalFmt: money(unit * it.qty) };
@@ -1517,7 +1585,15 @@ class Component extends DCLogic {
       calcGramos: s.calcGramos,
       onCalcGramos: e => { const v = e.target.value; this.setState({ calcGramos: v }); },
       calcResultLabel: calcProducto ? (calcGramosN || 0) + "gr de " + calcProducto.nombre : "Elegí un producto y cargá los gramos",
-      calcResultFmt: money(calcPrecio)
+      calcResultFmt: money(calcPrecio),
+      calcListo,
+      destinoOptions,
+      calcDestino: s.calcDestino,
+      onCalcDestino: e => { const v = e.target.value; this.setState({ calcDestino: v }); },
+      agregarPesoStyle: calcListo ? "flex:1; background:#6B5A3F; color:#F2ECE0; border:0; font-size:16px; font-weight:700; padding:15px; border-radius:12px; min-width:180px;" : "flex:1; background:#D6CEBB; color:#87806F; border:0; font-size:16px; font-weight:700; padding:15px; border-radius:12px; min-width:180px; cursor:not-allowed;",
+      cobrarPesoStyle: calcListo ? "flex:1; background:#9C7A3E; color:#262119; border:0; font-size:16px; font-weight:700; padding:15px; border-radius:12px; min-width:180px;" : "flex:1; background:#D6CEBB; color:#87806F; border:0; font-size:16px; font-weight:700; padding:15px; border-radius:12px; min-width:180px; cursor:not-allowed;",
+      agregarPesoACarrito: () => { if (calcListo) this.agregarPesoACarrito(s.calcDestino || "mostrador", calcProducto.id, calcGramosN); },
+      cobrarPesoAhora: () => { if (calcListo) this.cobrarPesoAhora(calcProducto.id, calcGramosN); }
     };
   }
 }

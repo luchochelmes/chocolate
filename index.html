@@ -815,7 +815,7 @@
     <div style="position:fixed; inset:0; z-index:60; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
       <div style="background:#F3EFE6; width:100%; max-width:460px; border-radius:22px; padding:26px;">
         <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:21px; margin:0 0 10px;">¿Vaciar mesas y mostrador?</h3>
-        <p style="margin:0 0 22px; font-size:15px; color:#655D4E; line-height:1.4;">Se van a borrar los pedidos activos y todo el historial de ventas del día de las {{ cantidadMesasLabel }} y del mostrador, sin cobrarlos. Como la Caja del día se calcula con esas ventas, también va a bajar. El catálogo de productos y los movimientos de Pagos no se modifican. Esta acción no se puede deshacer.</p>
+        <p style="margin:0 0 22px; font-size:15px; color:#655D4E; line-height:1.4;">Se van a borrar los pedidos activos y todo el historial de ventas del día de las {{ cantidadMesasLabel }} y del mostrador, sin cobrarlos, y también el historial de Ingreso/Retiro de Resumen del día. Como la Caja del día se calcula con todo eso, va a quedar en $0. El catálogo de productos y la pestaña Pagos no se modifican. Esta acción no se puede deshacer.</p>
         <div style="display:flex; gap:10px;">
           <button onClick="{{ cerrarModales }}" style="flex:1; background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:14px; border-radius:12px;" style-hover="background:#E9E2D2">Cancelar</button>
           <button onClick="{{ confirmarVaciarTodasMesas }}" style="flex:1; background:#8C5040; color:#F2ECE0; border:0; font-size:16px; font-weight:700; padding:14px; border-radius:12px;" style-hover="background:#7A4438">Sí, vaciar todas</button>
@@ -1442,6 +1442,7 @@ class Component extends DCLogic {
       confirmarVaciarTodasMesas: () => this.setState(st => ({
         mesas: st.mesas.map(m => ({ n: m.n, items: [], historial: [] })),
         mostrador: { items: [], historial: [] },
+        movimientos: [],
         showConfirmVaciarTodas: false
       })),
       metodos: METODOS.map(nombre => ({

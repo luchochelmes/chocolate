@@ -129,7 +129,7 @@
         <span style="display:flex; align-items:center; gap:7px;"><span style="width:14px; height:14px; border-radius:4px; background:#8C5040;"></span>Ocupada</span>
         <span style="display:flex; align-items:center; gap:7px;"><span style="width:14px; height:14px; border-radius:4px; background:#D9DCC8; border:1px solid #B8BCA1;"></span>Libre</span>
       </div>
-      <button onClick="{{ abrirConfirmVaciarTodas }}" style="margin-left:auto; background:transparent; border:2px solid #D7C7BE; color:#7A4438; font-size:14px; font-weight:600; padding:9px 14px; border-radius:10px;" style-hover="background:#EFE6E1">Vaciar todas las mesas</button>
+      <button onClick="{{ abrirConfirmVaciarTodas }}" style="margin-left:auto; background:transparent; border:2px solid #D7C7BE; color:#7A4438; font-size:14px; font-weight:600; padding:9px 14px; border-radius:10px;" style-hover="background:#EFE6E1">Vaciar mesas y mostrador</button>
     </div>
 
     <section style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(190px,100%),1fr)); gap:14px;">
@@ -814,8 +814,8 @@
   <sc-if value="{{ showConfirmVaciarTodas }}">
     <div style="position:fixed; inset:0; z-index:60; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
       <div style="background:#F3EFE6; width:100%; max-width:460px; border-radius:22px; padding:26px;">
-        <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:21px; margin:0 0 10px;">¿Vaciar TODAS las mesas?</h3>
-        <p style="margin:0 0 22px; font-size:15px; color:#655D4E; line-height:1.4;">Se van a borrar los pedidos activos y todo el historial del día de las {{ cantidadMesasLabel }} mesas, sin cobrarlos. El mostrador, la caja, los pagos y el catálogo no se modifican. Esta acción no se puede deshacer.</p>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:21px; margin:0 0 10px;">¿Vaciar mesas y mostrador?</h3>
+        <p style="margin:0 0 22px; font-size:15px; color:#655D4E; line-height:1.4;">Se van a borrar los pedidos activos y todo el historial de ventas del día de las {{ cantidadMesasLabel }} y del mostrador, sin cobrarlos. Como la Caja del día se calcula con esas ventas, también va a bajar. El catálogo de productos y los movimientos de Pagos no se modifican. Esta acción no se puede deshacer.</p>
         <div style="display:flex; gap:10px;">
           <button onClick="{{ cerrarModales }}" style="flex:1; background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:14px; border-radius:12px;" style-hover="background:#E9E2D2">Cancelar</button>
           <button onClick="{{ confirmarVaciarTodasMesas }}" style="flex:1; background:#8C5040; color:#F2ECE0; border:0; font-size:16px; font-weight:700; padding:14px; border-radius:12px;" style-hover="background:#7A4438">Sí, vaciar todas</button>
@@ -1441,6 +1441,7 @@ class Component extends DCLogic {
       abrirConfirmVaciarTodas: () => this.setState({ showConfirmVaciarTodas: true }),
       confirmarVaciarTodasMesas: () => this.setState(st => ({
         mesas: st.mesas.map(m => ({ n: m.n, items: [], historial: [] })),
+        mostrador: { items: [], historial: [] },
         showConfirmVaciarTodas: false
       })),
       metodos: METODOS.map(nombre => ({

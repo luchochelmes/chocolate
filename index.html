@@ -824,6 +824,23 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ showPinModal }}">
+    <div style="position:fixed; inset:0; z-index:60; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div style="background:#F3EFE6; width:100%; max-width:360px; border-radius:22px; padding:26px; text-align:center;">
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:21px; margin:0 0 10px;">Ingresá el PIN</h3>
+        <p style="margin:0 0 18px; font-size:15px; color:#655D4E; line-height:1.4;">Esta sección muestra el dinero del día. Pedile el PIN a quien esté a cargo.</p>
+        <input value="{{ pinInput }}" onChange="{{ onPinInput }}" type="password" inputMode="numeric" maxlength="4" placeholder="••••" style="width:100%; text-align:center; letter-spacing:0.5em; font-size:24px; font-weight:700; padding:14px; border:2px solid #D6CEBB; border-radius:12px; background:#FCFBF8; color:#262119; margin-bottom:10px;" />
+        <sc-if value="{{ pinError }}">
+          <p style="margin:0 0 10px; font-size:14px; color:#8C5040; font-weight:600;">PIN incorrecto, probá de nuevo.</p>
+        </sc-if>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <button onClick="{{ cerrarPin }}" style="flex:1; background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:14px; border-radius:12px;" style-hover="background:#E9E2D2">Cancelar</button>
+          <button onClick="{{ confirmarPin }}" style="flex:1; background:#6B5A3F; color:#F2ECE0; border:0; font-size:16px; font-weight:700; padding:14px; border-radius:12px;" style-hover="background:#574A34">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ showTicket }}">
     <div style="position:fixed; inset:0; z-index:70; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
       <div style="width:100%; max-width:360px; display:flex; flex-direction:column; align-items:center; gap:14px;">
@@ -887,6 +904,7 @@ const SUPABASE_URL = "https://tfrkpbdqdmfbcaemsanr.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Jjm28aHc3PQMG0G37Ji8VA_gDN-m23c";
 const PERSIST_ROW_ID = "default";
 const PERSIST_KEYS = ["mesas", "mostrador", "productos", "nextId", "nextTicket", "categoriasPanaderia", "categoriasBar", "movimientos", "pagosList", "productosPeso", "nextPesoId"];
+const RESUMEN_PIN = "1234";
 
 const supabaseClient = (SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR-PROJECT") && window.supabase)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -921,6 +939,9 @@ class Component extends DCLogic {
     showConfirmVaciarTodas: false,
     showTicket: false,
     ticket: null,
+    showPinModal: false,
+    pinInput: "",
+    pinError: false,
     histOpen: null,
     form: { id: null, area: "panaderia", nombre: "", precio: "", stock: "", categoria: "Panadería", combo: false },
     movimientos: [],
@@ -1399,7 +1420,7 @@ class Component extends DCLogic {
       goDashboard: () => this.setState({ screen: "dashboard", activa: null, showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, histOpen: null }),
       goCatalogo: () => this.setState({ screen: "catalogo", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, form: { id: null, area: "panaderia", nombre: "", precio: "", stock: "", categoria: s.categoriasPanaderia[0] || "", combo: false } }),
       goBar: () => this.setState({ screen: "bar", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false, form: { id: null, area: "bar", nombre: "", precio: "", stock: "", categoria: s.categoriasBar[0] || "", combo: false } }),
-      goResumen: () => this.setState({ screen: "resumen", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false }),
+      goResumen: () => this.setState({ showPinModal: true, pinInput: "", pinError: false, showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false }),
       goPagos: () => this.setState({ screen: "pagos", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false }),
       goPorPeso: () => this.setState({ screen: "porpeso", showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showTicket: false }),
 
@@ -1433,6 +1454,21 @@ class Component extends DCLogic {
         this.setState({ showConfirmVaciar: false });
       },
       cerrarModales: () => this.setState({ showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showConfirmVaciarTodas: false }),
+      showPinModal: s.showPinModal,
+      pinInput: s.pinInput,
+      pinError: s.pinError,
+      onPinInput: e => {
+        const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+        this.setState({ pinInput: v, pinError: false });
+      },
+      confirmarPin: () => {
+        if (s.pinInput === RESUMEN_PIN) {
+          this.setState({ screen: "resumen", showPinModal: false, pinInput: "", pinError: false });
+        } else {
+          this.setState({ pinInput: "", pinError: true });
+        }
+      },
+      cerrarPin: () => this.setState({ showPinModal: false, pinInput: "", pinError: false }),
       showCatalogoModal: s.showCatalogoModal,
       showPago: s.showPago,
       showConfirmVaciar: s.showConfirmVaciar,

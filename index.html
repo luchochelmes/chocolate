@@ -97,9 +97,9 @@
     </nav>
 
     <div class="app-cash" style="margin-left:auto; display:flex; align-items:center; gap:18px;">
-      <div style="text-align:right;">
-        <div style="font-size:11px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.6;">Caja del día</div>
-        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:22px; color:#9C7A3E;">{{ totalDiaFmt }}</div>
+      <div onClick="{{ goResumen }}" style="text-align:right; cursor:pointer;" title="Ver Resumen del día">
+        <div style="font-size:11px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.6;">Caja del día 🔒</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:22px; color:#9C7A3E; filter:blur(7px); user-select:none;">{{ totalDiaFmt }}</div>
       </div>
       <div class="cash-date" style="font-size:13px; opacity:0.7; border-left:1px solid rgba(237,231,216,0.25); padding-left:18px; white-space:nowrap;">{{ fechaHoy }}</div>
     </div>
@@ -109,9 +109,9 @@
   <main class="app-main" style="padding:26px 22px 60px; max-width:1400px; margin:0 auto;">
 
     <section style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr)); gap:14px; margin-bottom:26px;">
-      <div class="hero-stat" style="grid-column:span 2; min-width:0; background:#2E2924; color:#F3EFE6; border-radius:18px; padding:22px 26px; display:flex; flex-direction:column; justify-content:center;">
-        <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65; margin-bottom:6px;">Total de ganancias del día</div>
-        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(40px,6vw,64px); line-height:1; color:#9C7A3E;">{{ totalDiaFmt }}</div>
+      <div class="hero-stat" onClick="{{ goResumen }}" style="grid-column:span 2; min-width:0; background:#2E2924; color:#F3EFE6; border-radius:18px; padding:22px 26px; display:flex; flex-direction:column; justify-content:center; cursor:pointer;" title="Ver Resumen del día">
+        <div style="font-size:13px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.65; margin-bottom:6px;">Total de ganancias del día 🔒</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(40px,6vw,64px); line-height:1; color:#9C7A3E; filter:blur(10px); user-select:none;">{{ totalDiaFmt }}</div>
       </div>
       <div style="background:#FBFAF6; border:2px solid #DED5C2; border-radius:18px; padding:20px 22px;">
         <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:#87806F; margin-bottom:8px;">Mesas ocupadas</div>

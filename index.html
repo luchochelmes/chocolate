@@ -517,8 +517,13 @@
 
   <sc-if value="{{ isResumen }}">
   <main class="app-main" style="padding:26px 22px 60px; max-width:1200px; margin:0 auto;">
-    <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0 0 4px;">Resumen del día</h2>
-    <p style="margin:0 0 22px; color:#87806F; font-size:15px;">{{ fechaHoy }} · cierre de caja</p>
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px;">
+      <div>
+        <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; margin:0 0 4px;">Resumen del día</h2>
+        <p style="margin:0; color:#87806F; font-size:15px;">{{ fechaHoy }} · cierre de caja</p>
+      </div>
+      <button onClick="{{ exportarVentasDia }}" style="background:#6B5A3F; color:#F2ECE0; border:0; font-size:15px; font-weight:700; padding:14px 20px; border-radius:12px; white-space:nowrap;" style-hover="background:#574A34">Exportar ventas del día (Excel)</button>
+    </div>
 
     <div style="background:#2E2924; color:#F3EFE6; border-radius:20px; padding:28px 30px; display:flex; gap:30px; flex-wrap:wrap; align-items:flex-end; margin-bottom:20px;">
       <div>
@@ -825,6 +830,19 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ showConfirmCerrarDia }}">
+    <div style="position:fixed; inset:0; z-index:60; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div style="background:#F3EFE6; width:100%; max-width:460px; border-radius:22px; padding:26px;">
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:21px; margin:0 0 10px;">¿Ya guardaste el Excel?</h3>
+        <p style="margin:0 0 22px; font-size:15px; color:#655D4E; line-height:1.4;">Se descargó el archivo con las ventas del día. Si confirmás, se van a borrar los pedidos cerrados de hoy, el historial de mesas y mostrador, y los movimientos de caja, para empezar un día nuevo en $0. El catálogo de productos y la pestaña Pagos no se modifican. Esta acción no se puede deshacer.</p>
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ cerrarModales }}" style="flex:1; background:transparent; border:2px solid #D6CEBB; color:#6E6656; font-size:16px; font-weight:600; padding:14px; border-radius:12px;" style-hover="background:#E9E2D2">Todavía no</button>
+          <button onClick="{{ confirmarCerrarDia }}" style="flex:1; background:#8C5040; color:#F2ECE0; border:0; font-size:16px; font-weight:700; padding:14px; border-radius:12px;" style-hover="background:#7A4438">Sí, borrar ventas del día</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ showPinModal }}">
     <div style="position:fixed; inset:0; z-index:60; background:rgba(38,33,25,0.6); display:flex; align-items:center; justify-content:center; padding:20px;">
       <div style="background:#F3EFE6; width:100%; max-width:360px; border-radius:22px; padding:26px; text-align:center;">
@@ -938,6 +956,7 @@ class Component extends DCLogic {
     showPago: false,
     showConfirmVaciar: false,
     showConfirmVaciarTodas: false,
+    showConfirmCerrarDia: false,
     showTicket: false,
     ticket: null,
     showPinModal: false,
@@ -1008,6 +1027,59 @@ class Component extends DCLogic {
       .from("app_state")
       .upsert({ id: PERSIST_ROW_ID, data: snapshot, updated_at: new Date().toISOString() })
       .then(({ error }) => { if (error) console.error("[persist] error al guardar:", error); });
+  }
+
+  exportarVentasCsv() {
+    const s = this.state;
+    const sep = ";";
+    const esc = v => '"' + String(v).replace(/"/g, '""') + '"';
+    const fila = arr => arr.map(esc).join(sep);
+    const mesasVis = s.mesas.slice(0, this.count);
+    const porMetodo = { Efectivo: 0, Transferencia: 0, Débito: 0, Crédito: 0 };
+
+    const todas = [];
+    mesasVis.forEach(m => m.historial.forEach(h => todas.push({ h, origen: this.label(m.n) })));
+    s.mostrador.historial.forEach(h => todas.push({ h, origen: "Mostrador" + (h.numero ? " (Ticket N° " + String(h.numero).padStart(4, "0") + ")" : "") }));
+    todas.sort((a, b) => (a.h.hora < b.h.hora ? -1 : 1));
+
+    const rows = [fila(["Hora", "Origen", "Método de pago", "Items", "Detalle", "Total"])];
+    todas.forEach(({ h, origen }) => {
+      porMetodo[h.metodo] = (porMetodo[h.metodo] || 0) + h.total;
+      const detalle = (h.items || []).map(it => {
+        const nombre = it.label || (this.prod(it.pid) || { nombre: "Producto eliminado" }).nombre;
+        return nombre + " x" + it.qty;
+      }).join(", ");
+      rows.push(fila([h.hora, origen, h.metodo, h.unidades, detalle, money(h.total)]));
+    });
+
+    const totalVentas = Object.keys(porMetodo).reduce((a, k) => a + porMetodo[k], 0);
+    const movimientosNeto = s.movimientos.reduce((a, m) => a + (m.tipo === "ingreso" ? m.monto : -m.monto), 0);
+
+    rows.push("");
+    rows.push(fila(["Resumen del día", new Date().toLocaleDateString("es-AR")]));
+    METODOS.forEach(nombre => rows.push(fila([nombre, money(porMetodo[nombre] || 0)])));
+    rows.push(fila(["Total ventas", money(totalVentas)]));
+    rows.push(fila(["Movimientos de caja (ingresos - retiros)", money(movimientosNeto)]));
+    rows.push(fila(["Total caja del día", money(totalVentas + movimientosNeto)]));
+
+    if (s.movimientos.length) {
+      rows.push("");
+      rows.push(fila(["Detalle de movimientos de caja", "", "", ""]));
+      rows.push(fila(["Hora", "Nombre", "Tipo", "Monto"]));
+      s.movimientos.forEach(m => rows.push(fila([m.hora, m.nombre, m.tipo === "ingreso" ? "Ingreso" : "Retiro", money(m.monto)])));
+    }
+
+    const csv = "﻿" + rows.join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const fecha = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = "ventas-" + fecha + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   get count() { return Math.max(1, Math.min(24, this.props.cantidadMesas ?? 14)); }
@@ -1454,7 +1526,7 @@ class Component extends DCLogic {
         else if (activa) this.setMesa(activa.n, m => { m.items = []; return m; });
         this.setState({ showConfirmVaciar: false });
       },
-      cerrarModales: () => this.setState({ showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showConfirmVaciarTodas: false }),
+      cerrarModales: () => this.setState({ showCatalogoModal: false, showPago: false, showConfirmVaciar: false, showConfirmVaciarTodas: false, showConfirmCerrarDia: false }),
       showPinModal: s.showPinModal,
       pinInput: s.pinInput,
       pinError: s.pinError,
@@ -1481,6 +1553,17 @@ class Component extends DCLogic {
         mostrador: { items: [], historial: [] },
         movimientos: [],
         showConfirmVaciarTodas: false
+      })),
+      exportarVentasDia: () => {
+        this.exportarVentasCsv();
+        this.setState({ showConfirmCerrarDia: true });
+      },
+      showConfirmCerrarDia: s.showConfirmCerrarDia,
+      confirmarCerrarDia: () => this.setState(st => ({
+        mesas: st.mesas.map(m => ({ n: m.n, items: [], historial: [] })),
+        mostrador: { items: [], historial: [] },
+        movimientos: [],
+        showConfirmCerrarDia: false
       })),
       metodos: METODOS.map(nombre => ({
         nombre,
